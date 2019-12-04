@@ -61,7 +61,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 // dont authenticate this particular request
                 .authorizeRequests().antMatchers("/authenticate", "/register", "/registerAsADriver").permitAll().
                 // all other requests need to be authenticated
-                        anyRequest().authenticated().and().
+                        //anyRequest().authenticated().
+                antMatchers("/hello").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER").
+                antMatchers("/new").hasAuthority("ROLE_ADMIN").
+                and().
+
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
                         exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
