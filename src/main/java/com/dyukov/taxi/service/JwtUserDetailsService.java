@@ -61,7 +61,13 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     public UserDao save(RegistrationData registrationData) {
         AppUser appUser = convertFromDto(registrationData);
-        AppUser savedUser = userDetailsRepository.save(appUser);
+        AppUser savedUser = userDetailsRepository.saveUser(appUser);
+        return convertToDTO(savedUser);
+    }
+
+    public UserDao saveAdmin(RegistrationData registrationData) {
+        AppUser appUser = convertFromDto(registrationData);
+        AppUser savedUser = userDetailsRepository.saveAdmin(appUser);
         return convertToDTO(savedUser);
     }
 
