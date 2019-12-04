@@ -3,9 +3,12 @@ package com.dyukov.taxi.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.AppUser;
 import com.dyukov.taxi.repository.UserDetailsRepository;
 import com.dyukov.taxi.repository.UserRoleRepository;
+import com.dyukov.taxi.utils.EncryptedPasswordUtils;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -23,6 +26,9 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -47,17 +53,25 @@ public class JwtUserDetailsService implements UserDetailsService {
             }
         }
 
-        UserDetails userDetails = (UserDetails) new User(appUser.getUserName(), //
+        UserDetails userDetails = new User(appUser.getUserName(), //
                 appUser.getEncrytedPassword(), grantList);
 
         return userDetails;
+    }
 
+    public UserDao save(UserDao userDao) {
+        System.out.println("22222222222 + userName: " + userDao.getUserName() + ", password: " + userDao.getPassword());
+        AppUser appUser = new AppUser();
+        appUser.setUserName(userDao.getUserName());
+        appUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(userDao.getPassword()));
+        appUser.setEnabled(true);
+        AppUser savedUser = userDetailsRepository.save(appUser);
+        return convertToDTO(savedUser);
+    }
 
-        /*if ("javainuse".equals(username)) {
-            return new User("javainuse", "$2a$10$slYQmyNdGzTn7ZLBXBChFOC9f6kFjAqPhccnP6DxlWXx2lPk1C3G6",
-                    new ArrayList<>());
-        } else {
-            throw new UsernameNotFoundException("User not found with username: " + username);
-        }*/
+    private UserDao convertToDTO(AppUser appUser) {
+        UserDao user = modelMapper.map(appUser, UserDao.class);
+        user.setPassword(null);
+        return user;
     }
 }
