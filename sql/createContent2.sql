@@ -1,12 +1,14 @@
 -- Remove tables
+if OBJECT_ID('dbo.USER_ROLE', 'U') is not null
+    drop table USER_ROLE;
 if OBJECT_ID('dbo.APP_USER', 'U') is not null
     drop table APP_USER;
 if OBJECT_ID('dbo.APP_ROLE', 'U') is not null
     drop table APP_ROLE;
-if OBJECT_ID('dbo.USER_ROLE', 'U') is not null
-    drop table USER_ROLE;
 if OBJECT_ID('dbo.Persistent_Logins', 'U') is not null
     drop table Persistent_Logins;
+if OBJECT_ID('dbo.EXPIRED_TOKENS', 'U') is not null
+    drop table EXPIRED_TOKENS;
 
 go;
 
@@ -39,6 +41,12 @@ create table USER_ROLE
     USER_ID BIGINT not null,
     ROLE_ID BIGINT not null
 );
+
+create table EXPIRED_TOKENS
+(
+    ID      BIGINT not null IDENTITY (1, 1),
+    TOKEN   VARCHAR(256) not null
+);
 alter table USER_ROLE
     add constraint USER_ROLE_PK primary key (ID);
 alter table USER_ROLE
@@ -61,11 +69,15 @@ CREATE TABLE Persistent_Logins (
 
 );
 
+SET IDENTITY_INSERT App_User ON
+
 insert into App_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
 values (2, 'dbuser1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
 insert into App_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
 values (1, 'dbadmin1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+
+SET IDENTITY_INSERT App_User OFF
 
 ---
 
@@ -77,6 +89,8 @@ values (2, 'ROLE_USER');
 
 ---
 
+SET IDENTITY_INSERT user_role ON
+
 insert into user_role (ID, USER_ID, ROLE_ID)
 values (1, 1, 1);
 
@@ -85,3 +99,5 @@ values (2, 1, 2);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
 values (3, 2, 2);
+
+SET IDENTITY_INSERT user_role OFF
