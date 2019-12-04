@@ -1,5 +1,6 @@
 package com.dyukov.taxi.controller;
 
+import com.dyukov.taxi.dao.ExpiredTokenDao;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.JwtUserDetailsService;
@@ -28,5 +29,10 @@ public class HelloWorldController {
     @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
     public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
         return userDetailsService.saveAdmin(registrationData);
+    }
+
+    @RequestMapping(value = "/doLogout", method = RequestMethod.POST)
+    public void invalidateToken(@RequestBody ExpiredTokenDao expiredToken) {
+        userDetailsService.invalidateToken(expiredToken.getToken());
     }
 }
