@@ -1,10 +1,9 @@
 package com.dyukov.taxi.dao;
 
-public class UserDao {
-
-    private Long userId;
+public class RegistrationData {
 
     private String userName;
+    private String password;
 
     public String getUserName() {
         return userName;
@@ -14,11 +13,11 @@ public class UserDao {
         this.userName = userName;
     }
 
-    public Long getUserId() {
-        return userId;
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setPassword(String password) {
+        this.password = password;
     }
 }
