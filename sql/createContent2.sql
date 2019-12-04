@@ -35,7 +35,7 @@ alter table APP_ROLE
 
 create table USER_ROLE
 (
-    ID      BIGINT not null,
+    ID      BIGINT not null IDENTITY (1, 1),
     USER_ID BIGINT not null,
     ROLE_ID BIGINT not null
 );
