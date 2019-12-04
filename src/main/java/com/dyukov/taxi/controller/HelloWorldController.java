@@ -1,5 +1,6 @@
 package com.dyukov.taxi.controller;
 
+import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +21,7 @@ public class HelloWorldController {
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public UserDao registerUser(@RequestBody UserDao userDao) {
-        System.out.println("!!!!! userDao: " + userDao);
-        return userDetailsService.save(userDao);
+    public UserDao registerUser(@RequestBody RegistrationData registrationData) {
+        return userDetailsService.save(registrationData);
     }
 }

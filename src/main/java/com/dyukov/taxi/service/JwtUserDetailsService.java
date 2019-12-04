@@ -3,6 +3,7 @@ package com.dyukov.taxi.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.AppUser;
 import com.dyukov.taxi.repository.UserDetailsRepository;
@@ -53,25 +54,25 @@ public class JwtUserDetailsService implements UserDetailsService {
             }
         }
 
-        UserDetails userDetails = new User(appUser.getUserName(), //
+        return new User(appUser.getUserName(), //
                 appUser.getEncrytedPassword(), grantList);
 
-        return userDetails;
     }
 
-    public UserDao save(UserDao userDao) {
-        System.out.println("22222222222 + userName: " + userDao.getUserName() + ", password: " + userDao.getPassword());
-        AppUser appUser = new AppUser();
-        appUser.setUserName(userDao.getUserName());
-        appUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(userDao.getPassword()));
-        appUser.setEnabled(true);
+    public UserDao save(RegistrationData registrationData) {
+        AppUser appUser = convertFromDto(registrationData);
         AppUser savedUser = userDetailsRepository.save(appUser);
         return convertToDTO(savedUser);
     }
 
     private UserDao convertToDTO(AppUser appUser) {
-        UserDao user = modelMapper.map(appUser, UserDao.class);
-        user.setPassword(null);
-        return user;
+        return modelMapper.map(appUser, UserDao.class);
+    }
+
+    private AppUser convertFromDto(RegistrationData registrationData) {
+        AppUser appUser = modelMapper.map(registrationData, AppUser.class);
+        appUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(registrationData.getPassword()));
+        appUser.setEnabled(true);
+        return appUser;
     }
 }
