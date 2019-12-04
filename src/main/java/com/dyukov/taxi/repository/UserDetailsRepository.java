@@ -16,6 +16,9 @@ public class UserDetailsRepository {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+
     public AppUser findUserAccount(String userName) {
         try {
             String sql = "Select e from " + AppUser.class.getName() + " e " //
@@ -30,10 +33,18 @@ public class UserDetailsRepository {
         }
     }
 
-    public AppUser save(AppUser appUser) {
+    public AppUser saveUser(AppUser appUser) {
         entityManager.persist(appUser);
+        userRoleRepository.saveUserRole(appUser);
         entityManager.flush();
         return appUser;
+    }
 
+    public AppUser saveAdmin(AppUser appUser) {
+        entityManager.persist(appUser);
+        userRoleRepository.saveUserRole(appUser);
+        userRoleRepository.saveAdminRole(appUser);
+        entityManager.flush();
+        return appUser;
     }
 }

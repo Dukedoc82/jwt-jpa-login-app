@@ -24,4 +24,9 @@ public class HelloWorldController {
     public UserDao registerUser(@RequestBody RegistrationData registrationData) {
         return userDetailsService.save(registrationData);
     }
+
+    @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
+    public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
+        return userDetailsService.saveAdmin(registrationData);
+    }
 }
