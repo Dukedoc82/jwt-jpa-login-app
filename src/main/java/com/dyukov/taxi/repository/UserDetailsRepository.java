@@ -30,4 +30,10 @@ public class UserDetailsRepository {
         }
     }
 
+    public AppUser save(AppUser appUser) {
+        entityManager.persist(appUser);
+        entityManager.flush();
+        return appUser;
+
+    }
 }

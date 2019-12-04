@@ -9,8 +9,8 @@ import javax.persistence.*;
 public class AppUser {
 
     @Id
-    @GeneratedValue
-    @Column(name = "User_Id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "User_Id")
     private Long userId;
 
     @Column(name = "User_Name", length = 36, nullable = false)
