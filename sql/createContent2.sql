@@ -13,7 +13,7 @@ go;
 -- Create tables
 create table APP_USER
 (
-    USER_ID             BIGINT not null,
+    USER_ID             BIGINT not null IDENTITY(1, 1),
     USER_NAME           VARCHAR(50) not null,
     ENCRYTED_PASSWORD  VARCHAR(128) not null,
     ENABLED             BIT not null
