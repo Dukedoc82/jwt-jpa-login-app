@@ -1,17 +1,14 @@
 -- Remove tables
 if OBJECT_ID('dbo.USER_ROLE', 'U') is not null
     drop table USER_ROLE;
-if OBJECT_ID('dbo.APP_USER', 'U') is not null
-    drop table APP_USER;
 if OBJECT_ID('dbo.TP_USER', 'U') is not null
     drop table TP_USER;
-if OBJECT_ID('dbo.APP_ROLE', 'U') is not null
-    drop table APP_ROLE;
+if OBJECT_ID('dbo.TP_ROLE', 'U') is not null
+    drop table TP_ROLE;
 if OBJECT_ID('dbo.EXPIRED_TOKENS', 'U') is not null
     drop table EXPIRED_TOKENS;
 
 --
-
 
 go;
 
@@ -28,14 +25,14 @@ alter table TP_USER
 alter table TP_USER
     add constraint TP_USER_UK unique (USER_NAME);
 
-create table APP_ROLE
+create table TP_ROLE
 (
     ROLE_ID   BIGINT not null,
     ROLE_NAME VARCHAR(30) not null
 ) ;
-alter table APP_ROLE
+alter table TP_ROLE
     add constraint APP_ROLE_PK primary key (ROLE_ID);
-alter table APP_ROLE
+alter table TP_ROLE
     add constraint APP_ROLE_UK unique (ROLE_NAME);
 
 create table USER_ROLE
@@ -59,7 +56,7 @@ alter table USER_ROLE
         references TP_USER (USER_ID);
 alter table USER_ROLE
     add constraint USER_ROLE_FK2 foreign key (ROLE_ID)
-        references APP_ROLE (ROLE_ID);
+        references TP_ROLE (ROLE_ID);
 
 SET IDENTITY_INSERT TP_User ON
 
@@ -73,13 +70,13 @@ SET IDENTITY_INSERT Tp_User OFF
 
 ---
 
-insert into app_role (ROLE_ID, ROLE_NAME)
+insert into tp_role (ROLE_ID, ROLE_NAME)
 values (1, 'ROLE_ADMIN');
 
-insert into app_role (ROLE_ID, ROLE_NAME)
+insert into tp_role (ROLE_ID, ROLE_NAME)
 values (2, 'ROLE_USER');
 
-insert into app_role (ROLE_ID, ROLE_NAME)
+insert into tp_role (ROLE_ID, ROLE_NAME)
 values (3, 'ROLE_DRIVER');
 
 

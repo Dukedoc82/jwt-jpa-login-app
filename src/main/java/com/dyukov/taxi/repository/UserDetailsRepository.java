@@ -43,7 +43,6 @@ public class UserDetailsRepository {
 
     public TpUser saveAdmin(TpUser tpUser) {
         entityManager.persist(tpUser);
-        userRoleRepository.saveUserRole(tpUser);
         userRoleRepository.saveAdminRole(tpUser);
         entityManager.flush();
         return tpUser;

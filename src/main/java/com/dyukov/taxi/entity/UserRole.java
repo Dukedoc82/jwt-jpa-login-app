@@ -19,7 +19,7 @@ public class UserRole {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Role_Id", nullable = false)
-    private AppRole appRole;
+    private TpRole tpRole;
 
     public Long getId() {
         return id;
@@ -37,12 +37,12 @@ public class UserRole {
         this.tpUser = tpUser;
     }
 
-    public AppRole getAppRole() {
-        return appRole;
+    public TpRole getTpRole() {
+        return tpRole;
     }
 
-    public void setAppRole(AppRole appRole) {
-        this.appRole = appRole;
+    public void setTpRole(TpRole tpRole) {
+        this.tpRole = tpRole;
     }
 
 }

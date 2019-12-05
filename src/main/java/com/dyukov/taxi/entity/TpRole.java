@@ -3,10 +3,10 @@ package com.dyukov.taxi.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "App_Role", //
+@Table(name = "Tp_Role", //
         uniqueConstraints = { //
-                @UniqueConstraint(name = "APP_ROLE_UK", columnNames = "Role_Name") })
-public class AppRole {
+                @UniqueConstraint(name = "Tp_ROLE_UK", columnNames = "Role_Name") })
+public class TpRole {
 
     @Id
     @GeneratedValue
