@@ -6,7 +6,7 @@ import javax.persistence.*;
 @Table(name = "TP_User", //
         uniqueConstraints = { //
                 @UniqueConstraint(name = "TP_USER_UK", columnNames = "User_Name") })
-public class AppUser {
+public class TpUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

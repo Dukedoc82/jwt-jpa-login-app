@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
-import com.dyukov.taxi.entity.AppUser;
+import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.ExpiredToken;
 import com.dyukov.taxi.repository.ExpiredTokensRepository;
 import com.dyukov.taxi.repository.UserDetailsRepository;
@@ -42,14 +42,14 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        AppUser appUser = userDetailsRepository.findUserAccount(username);
+        TpUser tpUser = userDetailsRepository.findUserAccount(username);
 
-        if (appUser == null) {
+        if (tpUser == null) {
             logger.warn("User not found! " + username);
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }
 
-        List<String> roleNames = this.userRoleRepository.getRoleNames(appUser.getUserId());
+        List<String> roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
 
         List<GrantedAuthority> grantList = new ArrayList<>();
         if (roleNames != null) {
@@ -59,20 +59,20 @@ public class JwtUserDetailsService implements UserDetailsService {
             }
         }
 
-        return new User(appUser.getUserName(), //
-                appUser.getEncrytedPassword(), grantList);
+        return new User(tpUser.getUserName(), //
+                tpUser.getEncrytedPassword(), grantList);
 
     }
 
     public UserDao save(RegistrationData registrationData) {
-        AppUser appUser = convertFromDto(registrationData);
-        AppUser savedUser = userDetailsRepository.saveUser(appUser);
+        TpUser tpUser = convertFromDto(registrationData);
+        TpUser savedUser = userDetailsRepository.saveUser(tpUser);
         return convertToDTO(savedUser);
     }
 
     public UserDao saveAdmin(RegistrationData registrationData) {
-        AppUser appUser = convertFromDto(registrationData);
-        AppUser savedUser = userDetailsRepository.saveAdmin(appUser);
+        TpUser tpUser = convertFromDto(registrationData);
+        TpUser savedUser = userDetailsRepository.saveAdmin(tpUser);
         return convertToDTO(savedUser);
     }
 
@@ -82,14 +82,14 @@ public class JwtUserDetailsService implements UserDetailsService {
         expiredTokensRepository.invalidateToken(expiredToken);
     }
 
-    private UserDao convertToDTO(AppUser appUser) {
-        return modelMapper.map(appUser, UserDao.class);
+    private UserDao convertToDTO(TpUser tpUser) {
+        return modelMapper.map(tpUser, UserDao.class);
     }
 
-    private AppUser convertFromDto(RegistrationData registrationData) {
-        AppUser appUser = modelMapper.map(registrationData, AppUser.class);
-        appUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(registrationData.getPassword()));
-        appUser.setEnabled(true);
-        return appUser;
+    private TpUser convertFromDto(RegistrationData registrationData) {
+        TpUser tpUser = modelMapper.map(registrationData, TpUser.class);
+        tpUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(registrationData.getPassword()));
+        tpUser.setEnabled(true);
+        return tpUser;
     }
 }

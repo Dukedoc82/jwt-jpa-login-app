@@ -15,7 +15,7 @@ public class UserRole {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "User_Id", nullable = false)
-    private AppUser appUser;
+    private TpUser tpUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Role_Id", nullable = false)
@@ -29,12 +29,12 @@ public class UserRole {
         this.id = id;
     }
 
-    public AppUser getAppUser() {
-        return appUser;
+    public TpUser getTpUser() {
+        return tpUser;
     }
 
-    public void setAppUser(AppUser appUser) {
-        this.appUser = appUser;
+    public void setTpUser(TpUser tpUser) {
+        this.tpUser = tpUser;
     }
 
     public AppRole getAppRole() {

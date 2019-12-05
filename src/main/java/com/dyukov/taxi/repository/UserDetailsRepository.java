@@ -1,6 +1,6 @@
 package com.dyukov.taxi.repository;
 
-import com.dyukov.taxi.entity.AppUser;
+import com.dyukov.taxi.entity.TpUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,32 +19,33 @@ public class UserDetailsRepository {
     @Autowired
     private UserRoleRepository userRoleRepository;
 
-    public AppUser findUserAccount(String userName) {
+    public TpUser findUserAccount(String userName) {
         try {
-            String sql = "Select e from " + AppUser.class.getName() + " e " //
+            String sql = "Select e from " + TpUser.class.getName() + " e " //
                     + " Where e.userName = :userName ";
 
-            Query query = entityManager.createQuery(sql, AppUser.class);
+            Query query = entityManager.createQuery(sql, TpUser.class);
             query.setParameter("userName", userName);
 
-            return (AppUser) query.getSingleResult();
+            return (TpUser) query.getSingleResult();
         } catch (NoResultException e) {
+            System.out.println("NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL");
             return null;
         }
     }
 
-    public AppUser saveUser(AppUser appUser) {
-        entityManager.persist(appUser);
-        userRoleRepository.saveUserRole(appUser);
+    public TpUser saveUser(TpUser tpUser) {
+        entityManager.persist(tpUser);
+        userRoleRepository.saveUserRole(tpUser);
         entityManager.flush();
-        return appUser;
+        return tpUser;
     }
 
-    public AppUser saveAdmin(AppUser appUser) {
-        entityManager.persist(appUser);
-        userRoleRepository.saveUserRole(appUser);
-        userRoleRepository.saveAdminRole(appUser);
+    public TpUser saveAdmin(TpUser tpUser) {
+        entityManager.persist(tpUser);
+        userRoleRepository.saveUserRole(tpUser);
+        userRoleRepository.saveAdminRole(tpUser);
         entityManager.flush();
-        return appUser;
+        return tpUser;
     }
 }
