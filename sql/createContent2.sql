@@ -3,27 +3,30 @@ if OBJECT_ID('dbo.USER_ROLE', 'U') is not null
     drop table USER_ROLE;
 if OBJECT_ID('dbo.APP_USER', 'U') is not null
     drop table APP_USER;
+if OBJECT_ID('dbo.TP_USER', 'U') is not null
+    drop table TP_USER;
 if OBJECT_ID('dbo.APP_ROLE', 'U') is not null
     drop table APP_ROLE;
-if OBJECT_ID('dbo.Persistent_Logins', 'U') is not null
-    drop table Persistent_Logins;
 if OBJECT_ID('dbo.EXPIRED_TOKENS', 'U') is not null
     drop table EXPIRED_TOKENS;
+
+--
+
 
 go;
 
 -- Create tables
-create table APP_USER
+create table TP_USER
 (
     USER_ID             BIGINT not null IDENTITY(1, 1),
     USER_NAME           VARCHAR(50) not null,
     ENCRYTED_PASSWORD  VARCHAR(128) not null,
     ENABLED             BIT not null
 );
-alter table APP_USER
-    add constraint APP_USER_PK primary key (USER_ID);
-alter table APP_USER
-    add constraint APP_USER_UK unique (USER_NAME);
+alter table TP_USER
+    add constraint TP_USER_PK primary key (USER_ID);
+alter table TP_USER
+    add constraint TP_USER_UK unique (USER_NAME);
 
 create table APP_ROLE
 (
@@ -53,31 +56,20 @@ alter table USER_ROLE
     add constraint USER_ROLE_UK unique (USER_ID, ROLE_ID);
 alter table USER_ROLE
     add constraint USER_ROLE_FK1 foreign key (USER_ID)
-        references APP_USER (USER_ID);
+        references TP_USER (USER_ID);
 alter table USER_ROLE
     add constraint USER_ROLE_FK2 foreign key (ROLE_ID)
         references APP_ROLE (ROLE_ID);
 
--- Used by Spring Remember Me API.
-CREATE TABLE Persistent_Logins (
+SET IDENTITY_INSERT TP_User ON
 
-                                   username varchar(64) not null,
-                                   series varchar(64) not null,
-                                   token varchar(64) not null,
-                                   last_used Datetime not null,
-                                   PRIMARY KEY (series)
-
-);
-
-SET IDENTITY_INSERT App_User ON
-
-insert into App_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
+insert into Tp_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
 values (2, 'dbuser1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
-insert into App_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
+insert into Tp_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
 values (1, 'dbadmin1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
-SET IDENTITY_INSERT App_User OFF
+SET IDENTITY_INSERT Tp_User OFF
 
 ---
 
@@ -86,6 +78,10 @@ values (1, 'ROLE_ADMIN');
 
 insert into app_role (ROLE_ID, ROLE_NAME)
 values (2, 'ROLE_USER');
+
+insert into app_role (ROLE_ID, ROLE_NAME)
+values (3, 'ROLE_DRIVER');
+
 
 ---
 

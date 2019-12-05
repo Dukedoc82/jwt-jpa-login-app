@@ -3,9 +3,9 @@ package com.dyukov.taxi.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "App_User", //
+@Table(name = "TP_User", //
         uniqueConstraints = { //
-                @UniqueConstraint(name = "APP_USER_UK", columnNames = "User_Name") })
+                @UniqueConstraint(name = "TP_USER_UK", columnNames = "User_Name") })
 public class AppUser {
 
     @Id
