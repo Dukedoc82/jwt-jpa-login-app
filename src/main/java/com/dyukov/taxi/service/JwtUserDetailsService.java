@@ -11,6 +11,8 @@ import com.dyukov.taxi.repository.ExpiredTokensRepository;
 import com.dyukov.taxi.repository.UserDetailsRepository;
 import com.dyukov.taxi.repository.UserRoleRepository;
 import com.dyukov.taxi.utils.EncryptedPasswordUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
+
+    protected final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
     private UserDetailsRepository userDetailsRepository;
@@ -41,19 +45,15 @@ public class JwtUserDetailsService implements UserDetailsService {
         AppUser appUser = userDetailsRepository.findUserAccount(username);
 
         if (appUser == null) {
-            System.out.println("User not found! " + username);
+            logger.warn("User not found! " + username);
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }
 
-        System.out.println("Found User: " + appUser);
-
-        // [ROLE_USER, ROLE_ADMIN,..]
         List<String> roleNames = this.userRoleRepository.getRoleNames(appUser.getUserId());
 
         List<GrantedAuthority> grantList = new ArrayList<>();
         if (roleNames != null) {
             for (String role : roleNames) {
-                // ROLE_USER, ROLE_ADMIN,..
                 GrantedAuthority authority = new SimpleGrantedAuthority(role);
                 grantList.add(authority);
             }

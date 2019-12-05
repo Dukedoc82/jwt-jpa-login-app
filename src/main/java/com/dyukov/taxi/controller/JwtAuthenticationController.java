@@ -1,6 +1,9 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
+import com.dyukov.taxi.dao.ExpiredTokenDao;
+import com.dyukov.taxi.dao.RegistrationData;
+import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.model.JwtRequest;
 import com.dyukov.taxi.model.JwtResponse;
 import com.dyukov.taxi.service.JwtUserDetailsService;
@@ -28,15 +31,26 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-        System.out.println("111! before authenticate");
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-        System.out.println("222! after authenticate");
         final UserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
-        System.out.println("333! after user load");
         final String token = jwtTokenUtil.generateToken(userDetails);
-        System.out.println("444! after generateToken");
         return ResponseEntity.ok(new JwtResponse(token));
+    }
+
+    @RequestMapping(value = "/doLogout", method = RequestMethod.POST)
+    public void invalidateToken(@RequestBody ExpiredTokenDao expiredToken) {
+        userDetailsService.invalidateToken(expiredToken.getToken());
+    }
+
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public UserDao registerUser(@RequestBody RegistrationData registrationData) {
+        return userDetailsService.save(registrationData);
+    }
+
+    @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
+    public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
+        return userDetailsService.saveAdmin(registrationData);
     }
 
     private void authenticate(String username, String password) throws Exception {
