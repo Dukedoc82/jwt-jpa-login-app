@@ -79,10 +79,8 @@
             error: function(response) {
                 console.log("templates.error");
             },
-            complete: function(response) {
-                if (response.readyState === 4 && response.status === 200) {
-                    $("div#object1").text(response.responseText);
-                }
+            success: function() {
+                window.location.href = "/test.html"
             }
         });
     }

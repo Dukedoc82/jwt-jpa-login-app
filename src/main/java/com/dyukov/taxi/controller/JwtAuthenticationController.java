@@ -9,7 +9,6 @@ import com.dyukov.taxi.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -19,9 +18,6 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.RequestDispatcher;
-import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @CrossOrigin
@@ -47,14 +43,6 @@ public class JwtAuthenticationController {
                 .path("/")
                 .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new JwtResponse(token));
-    }
-
-    @RequestMapping(value = "/doLogout", method = RequestMethod.GET)
-    public ResponseEntity<?> invalidateToken() {
-        HttpCookie cookie = ResponseCookie.from("userToken", null)
-                .path("/")
-                .build();
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(null);
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)

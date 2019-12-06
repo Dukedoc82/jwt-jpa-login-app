@@ -65,12 +65,28 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 antMatchers("/hello", "/test.html").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER").
                 antMatchers("/new").hasAuthority("ROLE_ADMIN").
                 and().
-                formLogin().loginPage("/login.html").permitAll().and().
+                    formLogin().loginPage("/login.html").permitAll().
+                and().
+                    logout()
+                    .logoutUrl("/logout")
+                    .deleteCookies("userToken")
+                    .invalidateHttpSession(true).permitAll().
+                and().
+                    sessionManagement()
+                        .maximumSessions(1).
+                and()
+                    .invalidSessionUrl("/login.html").
+                sessionAuthenticationErrorUrl("/login.html").
+                and().
 
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
-                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedPage("/login.html")
+
+                .and().
+                    sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }

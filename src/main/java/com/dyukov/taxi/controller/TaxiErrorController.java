@@ -7,12 +7,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 @Controller
 public class TaxiErrorController implements ErrorController {
 
     @RequestMapping("/error")
-    public String handleError(HttpServletRequest request) {
+    public String handleError(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Object status = request.getAttribute(RequestDispatcher.ERROR_STATUS_CODE);
 
         if (status != null) {
@@ -23,6 +25,9 @@ public class TaxiErrorController implements ErrorController {
             }
             else if(statusCode == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
                 return "error-500";
+            }
+            else if (statusCode == HttpStatus.UNAUTHORIZED.value()) {
+                response.sendRedirect("/");
             }
         }
         return "error";

@@ -5,8 +5,6 @@ if OBJECT_ID('dbo.TP_USER', 'U') is not null
     drop table TP_USER;
 if OBJECT_ID('dbo.TP_ROLE', 'U') is not null
     drop table TP_ROLE;
-if OBJECT_ID('dbo.EXPIRED_TOKENS', 'U') is not null
-    drop table EXPIRED_TOKENS;
 
 --
 
@@ -45,11 +43,6 @@ create table USER_ROLE
     ROLE_ID BIGINT not null
 );
 
-create table EXPIRED_TOKENS
-(
-    ID      BIGINT not null IDENTITY (1, 1),
-    TOKEN   VARCHAR(256) not null
-);
 alter table USER_ROLE
     add constraint USER_ROLE_PK primary key (ID);
 alter table USER_ROLE
