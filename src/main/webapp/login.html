@@ -75,8 +75,10 @@
             type: "GET",
             url: "/hello",
             contentType: "application/json;charset=UTF-8",
-            dataType: "json",
             async: false,
+            error: function(response) {
+                console.log("templates.error");
+            },
             complete: function(response) {
                 if (response.readyState === 4 && response.status === 200) {
                     $("div#object1").text(response.responseText);
