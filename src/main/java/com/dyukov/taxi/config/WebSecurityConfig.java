@@ -62,7 +62,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests().antMatchers("/authenticate", "/register", "/registerAsADriver").permitAll().
                 // all other requests need to be authenticated
                         //anyRequest().authenticated().
-                antMatchers("/hello", "/test.html").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER").
+                antMatchers("/hello", "/driver/**").
+                        hasAnyAuthority("ROLE_ADMIN", "ROLE_USER", "ROLE_DRIVER").
                 antMatchers("/new").hasAuthority("ROLE_ADMIN").
                 and().
                     formLogin().loginPage("/login.html").permitAll().

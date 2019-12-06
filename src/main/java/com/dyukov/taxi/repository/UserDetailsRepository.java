@@ -46,4 +46,11 @@ public class UserDetailsRepository {
         entityManager.flush();
         return tpUser;
     }
+
+    public TpUser saveDriver(TpUser tpUser) {
+        entityManager.persist(tpUser);
+        userRoleRepository.saveDriverRole(tpUser);
+        entityManager.flush();
+        return tpUser;
+    }
 }

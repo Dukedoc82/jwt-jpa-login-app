@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head>
+<head title="Epam Taxi">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="js/jquery-3.4.1.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/common.css">
@@ -45,42 +45,10 @@
             dataType: "json",
             async: false,
             error: function (request) {
-                console.log("Connection error: " + request.status);
+                console.log(request);
             },
             success: function (data) {
-                //save token
-                authCallback(data);
-
-
-            }
-        });
-
-    }
-
-    function authCallback(response) {
-        localStorage.setItem("token", response.token);
-        $("#id01").remove();
-        var $newdiv1 = $( "<div id='object1'></div>" );
-        $("body").append($newdiv1);
-        callHello();
-
-    }
-
-    function callHello() {
-        $.ajax({
-            cache: true,
-            beforeSend: function(request) {
-                request.setRequestHeader("Authorization", "Bearer " + localStorage.token);
-            },
-            type: "GET",
-            url: "/hello",
-            contentType: "application/json;charset=UTF-8",
-            async: false,
-            error: function(response) {
-                console.log("templates.error");
-            },
-            success: function() {
-                window.location.href = "/test.html"
+                window.location.href = data.uri;
             }
         });
     }

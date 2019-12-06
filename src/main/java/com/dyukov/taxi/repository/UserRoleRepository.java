@@ -35,6 +35,10 @@ public class UserRoleRepository {
         return saveRole(tpUser, "ROLE_ADMIN");
     }
 
+    public UserRole saveDriverRole(TpUser tpUser) {
+        return saveRole(tpUser, "ROLE_DRIVER");
+    }
+
     private UserRole saveRole(TpUser tpUser, String roleName) {
         String sql = "Select e from " + TpRole.class.getName() + " e " //
                 + " Where e.roleName = :roleName ";

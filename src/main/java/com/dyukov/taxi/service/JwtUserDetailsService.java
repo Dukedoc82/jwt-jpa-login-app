@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtUserDetailsService implements UserDetailsService {
 
-    protected final Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
     private UserDetailsRepository userDetailsRepository;
@@ -68,6 +68,12 @@ public class JwtUserDetailsService implements UserDetailsService {
     public UserDao saveAdmin(RegistrationData registrationData) {
         TpUser tpUser = convertFromDto(registrationData);
         TpUser savedUser = userDetailsRepository.saveAdmin(tpUser);
+        return convertToDTO(savedUser);
+    }
+
+    public UserDao saveDriver(RegistrationData registrationData) {
+        TpUser tpUser = convertFromDto(registrationData);
+        TpUser savedUser = userDetailsRepository.saveDriver(tpUser);
         return convertToDTO(savedUser);
     }
 

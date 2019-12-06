@@ -4,7 +4,6 @@ import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.model.JwtRequest;
-import com.dyukov.taxi.model.JwtResponse;
 import com.dyukov.taxi.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
@@ -16,12 +15,29 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
+
+    public class RedirectURI {
+
+        private String uri;
+
+        RedirectURI (String uri) {
+            this.uri = uri;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+    }
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -42,7 +58,37 @@ public class JwtAuthenticationController {
         HttpCookie cookie = ResponseCookie.from("userToken", token)
                 .path("/")
                 .build();
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new JwtResponse(token));
+        String targetUrl = "/";
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            switch (authority.getAuthority()) {
+                case "ROLE_ADMIN":
+                    targetUrl = getAdminUrl(targetUrl);
+                    break;
+                case "ROLE_DRIVER":
+                    targetUrl = getDriverUrl(targetUrl);
+                    break;
+                case "ROLE_USER":
+                    targetUrl = getUserUrl(targetUrl);
+                    break;
+            }
+        }
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new RedirectURI(targetUrl));
+    }
+
+    private String getAdminUrl(String targetUrl) {
+        targetUrl = targetUrl + "admin/test.html";
+        return targetUrl;
+    }
+
+    private String getDriverUrl(String targetUrl) {
+        targetUrl = targetUrl + "driver/test.html";
+        return targetUrl;
+    }
+
+    private String getUserUrl(String targetUrl) {
+        targetUrl = targetUrl + "test.html";
+        return targetUrl;
     }
 
     @RequestMapping(value = "/register", method = RequestMethod.POST)
@@ -52,7 +98,7 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
     public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
-        return userDetailsService.saveAdmin(registrationData);
+        return userDetailsService.saveDriver(registrationData);
     }
 
     private void authenticate(String username, String password) throws Exception {
@@ -64,4 +110,5 @@ public class JwtAuthenticationController {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
     }
+
 }
