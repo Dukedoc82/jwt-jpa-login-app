@@ -8,6 +8,7 @@ import com.dyukov.taxi.model.JwtRequest;
 import com.dyukov.taxi.model.JwtResponse;
 import com.dyukov.taxi.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -29,7 +30,8 @@ public class JwtAuthenticationController {
     @Autowired
     private JwtUserDetailsService userDetailsService;
 
-    @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+    @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         final UserDetails userDetails = userDetailsService

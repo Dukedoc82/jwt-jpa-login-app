@@ -17,7 +17,10 @@ create table TP_USER
 (
     USER_ID             BIGINT not null IDENTITY(1, 1),
     USER_NAME           VARCHAR(50) not null,
-    ENCRYTED_PASSWORD  VARCHAR(128) not null,
+    FIRST_NAME          VARCHAR(128) not null,
+    LAST_NAME           VARCHAR(128) not null,
+    PHONE_NUMBER        VARCHAR(12) not null,
+    ENCRYTED_PASSWORD   VARCHAR(128) not null,
     ENABLED             BIT not null
 );
 alter table TP_USER
@@ -60,11 +63,11 @@ alter table USER_ROLE
 
 SET IDENTITY_INSERT TP_User ON
 
-insert into Tp_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
-values (2, 'dbuser1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
+values (2, 'dbuser1', 'DB', 'USER', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
-insert into Tp_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
-values (1, 'dbadmin1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
+values (1, 'dbadmin1', 'DBA', 'ADMIN', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
 SET IDENTITY_INSERT Tp_User OFF
 

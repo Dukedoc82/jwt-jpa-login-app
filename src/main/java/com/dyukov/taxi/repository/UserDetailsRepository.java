@@ -29,7 +29,6 @@ public class UserDetailsRepository {
 
             return (TpUser) query.getSingleResult();
         } catch (NoResultException e) {
-            System.out.println("NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL");
             return null;
         }
     }

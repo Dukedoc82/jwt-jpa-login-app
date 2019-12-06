@@ -65,6 +65,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 antMatchers("/hello").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER").
                 antMatchers("/new").hasAuthority("ROLE_ADMIN").
                 and().
+                formLogin().loginPage("/login.html").permitAll().and().
 
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
