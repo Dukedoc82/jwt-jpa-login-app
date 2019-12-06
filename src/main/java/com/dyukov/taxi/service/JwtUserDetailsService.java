@@ -6,8 +6,6 @@ import java.util.List;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.TpUser;
-import com.dyukov.taxi.entity.ExpiredToken;
-import com.dyukov.taxi.repository.ExpiredTokensRepository;
 import com.dyukov.taxi.repository.UserDetailsRepository;
 import com.dyukov.taxi.repository.UserRoleRepository;
 import com.dyukov.taxi.utils.EncryptedPasswordUtils;
@@ -33,9 +31,6 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Autowired
     private UserRoleRepository userRoleRepository;
-
-    @Autowired
-    private ExpiredTokensRepository expiredTokensRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -74,12 +69,6 @@ public class JwtUserDetailsService implements UserDetailsService {
         TpUser tpUser = convertFromDto(registrationData);
         TpUser savedUser = userDetailsRepository.saveAdmin(tpUser);
         return convertToDTO(savedUser);
-    }
-
-    public void invalidateToken(String token) {
-        ExpiredToken expiredToken = new ExpiredToken();
-        expiredToken.setToken(token);
-        expiredTokensRepository.invalidateToken(expiredToken);
     }
 
     private UserDao convertToDTO(TpUser tpUser) {

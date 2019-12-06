@@ -1,17 +1,12 @@
 -- Remove tables
 if OBJECT_ID('dbo.USER_ROLE', 'U') is not null
     drop table USER_ROLE;
-if OBJECT_ID('dbo.APP_USER', 'U') is not null
-    drop table APP_USER;
 if OBJECT_ID('dbo.TP_USER', 'U') is not null
     drop table TP_USER;
-if OBJECT_ID('dbo.APP_ROLE', 'U') is not null
-    drop table APP_ROLE;
-if OBJECT_ID('dbo.EXPIRED_TOKENS', 'U') is not null
-    drop table EXPIRED_TOKENS;
+if OBJECT_ID('dbo.TP_ROLE', 'U') is not null
+    drop table TP_ROLE;
 
 --
-
 
 go;
 
@@ -20,7 +15,10 @@ create table TP_USER
 (
     USER_ID             BIGINT not null IDENTITY(1, 1),
     USER_NAME           VARCHAR(50) not null,
-    ENCRYTED_PASSWORD  VARCHAR(128) not null,
+    FIRST_NAME          VARCHAR(128) not null,
+    LAST_NAME           VARCHAR(128) not null,
+    PHONE_NUMBER        VARCHAR(12) not null,
+    ENCRYTED_PASSWORD   VARCHAR(128) not null,
     ENABLED             BIT not null
 );
 alter table TP_USER
@@ -28,14 +26,14 @@ alter table TP_USER
 alter table TP_USER
     add constraint TP_USER_UK unique (USER_NAME);
 
-create table APP_ROLE
+create table TP_ROLE
 (
     ROLE_ID   BIGINT not null,
     ROLE_NAME VARCHAR(30) not null
 ) ;
-alter table APP_ROLE
+alter table TP_ROLE
     add constraint APP_ROLE_PK primary key (ROLE_ID);
-alter table APP_ROLE
+alter table TP_ROLE
     add constraint APP_ROLE_UK unique (ROLE_NAME);
 
 create table USER_ROLE
@@ -45,11 +43,6 @@ create table USER_ROLE
     ROLE_ID BIGINT not null
 );
 
-create table EXPIRED_TOKENS
-(
-    ID      BIGINT not null IDENTITY (1, 1),
-    TOKEN   VARCHAR(256) not null
-);
 alter table USER_ROLE
     add constraint USER_ROLE_PK primary key (ID);
 alter table USER_ROLE
@@ -59,27 +52,27 @@ alter table USER_ROLE
         references TP_USER (USER_ID);
 alter table USER_ROLE
     add constraint USER_ROLE_FK2 foreign key (ROLE_ID)
-        references APP_ROLE (ROLE_ID);
+        references TP_ROLE (ROLE_ID);
 
 SET IDENTITY_INSERT TP_User ON
 
-insert into Tp_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
-values (2, 'dbuser1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
+values (2, 'dbuser1', 'DB', 'USER', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
-insert into Tp_User (USER_ID, USER_NAME, ENCRYTED_PASSWORD, ENABLED)
-values (1, 'dbadmin1', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
+values (1, 'dbadmin1', 'DBA', 'ADMIN', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
 SET IDENTITY_INSERT Tp_User OFF
 
 ---
 
-insert into app_role (ROLE_ID, ROLE_NAME)
+insert into tp_role (ROLE_ID, ROLE_NAME)
 values (1, 'ROLE_ADMIN');
 
-insert into app_role (ROLE_ID, ROLE_NAME)
+insert into tp_role (ROLE_ID, ROLE_NAME)
 values (2, 'ROLE_USER');
 
-insert into app_role (ROLE_ID, ROLE_NAME)
+insert into tp_role (ROLE_ID, ROLE_NAME)
 values (3, 'ROLE_DRIVER');
 
 

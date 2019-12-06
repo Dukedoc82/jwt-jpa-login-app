@@ -1,6 +1,6 @@
 package com.dyukov.taxi.repository;
 
-import com.dyukov.taxi.entity.AppRole;
+import com.dyukov.taxi.entity.TpRole;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ public class UserRoleRepository {
     private EntityManager entityManager;
 
     public List<String> getRoleNames(Long userId) {
-        String sql = "Select ur.appRole.roleName from " + UserRole.class.getName() + " ur " //
+        String sql = "Select ur.tpRole.roleName from " + UserRole.class.getName() + " ur " //
                 + " where ur.tpUser.userId = :userId ";
 
         Query query = this.entityManager.createQuery(sql, String.class);
@@ -36,13 +36,13 @@ public class UserRoleRepository {
     }
 
     private UserRole saveRole(TpUser tpUser, String roleName) {
-        String sql = "Select e from " + AppRole.class.getName() + " e " //
+        String sql = "Select e from " + TpRole.class.getName() + " e " //
                 + " Where e.roleName = :roleName ";
-        Query query = entityManager.createQuery(sql, AppRole.class);
+        Query query = entityManager.createQuery(sql, TpRole.class);
         query.setParameter("roleName", roleName);
-        AppRole appUserRole = (AppRole) query.getSingleResult();
+        TpRole appUserRole = (TpRole) query.getSingleResult();
         UserRole userRole = new UserRole();
-        userRole.setAppRole(appUserRole);
+        userRole.setTpRole(appUserRole);
         userRole.setTpUser(tpUser);
         entityManager.persist(userRole);
         entityManager.flush();

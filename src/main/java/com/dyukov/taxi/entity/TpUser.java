@@ -16,6 +16,15 @@ public class TpUser {
     @Column(name = "User_Name", length = 36, nullable = false)
     private String userName;
 
+    @Column(name = "First_Name", length = 128, nullable = false)
+    private String firstName;
+
+    @Column(name = "Last_Name", length = 128, nullable = false)
+    private String lastName;
+
+    @Column(name = "Phone_Number", length = 11, nullable = false)
+    private String phoneNumber;
+
     @Column(name = "Encryted_Password", length = 128, nullable = false)
     private String encrytedPassword;
 
@@ -54,4 +63,27 @@ public class TpUser {
         this.enabled = enabled;
     }
 
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 }
