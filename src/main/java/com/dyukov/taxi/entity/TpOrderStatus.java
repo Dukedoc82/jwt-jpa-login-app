@@ -1,0 +1,33 @@
+package com.dyukov.taxi.entity;
+
+import javax.persistence.*;
+
+@Entity
+@Table(name = "Tp_Status",
+        uniqueConstraints = { //
+                @UniqueConstraint(name = "Tp_Order_UK", columnNames = "Title_Key") })
+public class TpOrderStatus {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Column(name = "title_key")
+    private String titleKey;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTitleKey() {
+        return titleKey;
+    }
+
+    public void setTitleKey(String titleKey) {
+        this.titleKey = titleKey;
+    }
+}

@@ -33,6 +33,20 @@ public class UserDetailsRepository {
         }
     }
 
+    public TpUser findUserAccount(Long userId) {
+        try {
+            String sql = "Select e from " + TpUser.class.getName() + " e " //
+                    + " Where e.userId = :userId ";
+
+            Query query = entityManager.createQuery(sql, TpUser.class);
+            query.setParameter("userId", userId);
+
+            return (TpUser) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+
     public TpUser saveUser(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveUserRole(tpUser);

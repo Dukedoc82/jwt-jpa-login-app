@@ -4,6 +4,7 @@ import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.model.JwtRequest;
+import com.dyukov.taxi.model.TpUserDetails;
 import com.dyukov.taxi.service.JwtUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
@@ -16,7 +17,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -25,16 +25,30 @@ import java.util.Collection;
 @CrossOrigin
 public class JwtAuthenticationController {
 
-    public class RedirectURI {
+    public class AuthData {
 
         private String uri;
 
-        RedirectURI (String uri) {
+        private Long userId;
+
+        private String userLogin;
+
+        AuthData(String uri, Long userId, String userLogin) {
             this.uri = uri;
+            this.userId = userId;
+            this.userLogin = userLogin;
         }
 
         public String getUri() {
             return uri;
+        }
+
+        public Long getUserId() {
+            return userId;
+        }
+
+        public String getUserLogin() {
+            return userLogin;
         }
 
     }
@@ -52,7 +66,7 @@ public class JwtAuthenticationController {
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-        final UserDetails userDetails = userDetailsService
+        final TpUserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
         final String token = jwtTokenUtil.generateToken(userDetails);
         HttpCookie cookie = ResponseCookie.from("userToken", token)
@@ -73,7 +87,8 @@ public class JwtAuthenticationController {
                     break;
             }
         }
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString()).body(new RedirectURI(targetUrl));
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new AuthData(targetUrl, userDetails.getUserId(), userDetails.getUsername()));
     }
 
     private String getAdminUrl(String targetUrl) {

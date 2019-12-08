@@ -6,6 +6,7 @@ import java.util.List;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.model.TpUserDetails;
 import com.dyukov.taxi.repository.UserDetailsRepository;
 import com.dyukov.taxi.repository.UserRoleRepository;
 import com.dyukov.taxi.utils.EncryptedPasswordUtils;
@@ -36,7 +37,7 @@ public class JwtUserDetailsService implements UserDetailsService {
     private ModelMapper modelMapper;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public TpUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         TpUser tpUser = userDetailsRepository.findUserAccount(username);
 
         if (tpUser == null) {
@@ -54,7 +55,7 @@ public class JwtUserDetailsService implements UserDetailsService {
             }
         }
 
-        return new User(tpUser.getUserName(), //
+        return new TpUserDetails(tpUser.getUserId(), tpUser.getUserName(), //
                 tpUser.getEncrytedPassword(), grantList);
 
     }

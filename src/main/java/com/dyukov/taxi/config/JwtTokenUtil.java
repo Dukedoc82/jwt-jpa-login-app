@@ -1,5 +1,6 @@
 package com.dyukov.taxi.config;
 
+import com.dyukov.taxi.model.TpUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,6 +25,11 @@ public class JwtTokenUtil implements Serializable {
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
     }
+
+    public Long getUserIdFromToken(String token) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claims.get("userId", Long.class);
+    }
     //retrieve expiration date from jwt token
     public Date getExpirationDateFromToken(String token) {
         return getClaimFromToken(token, Claims::getExpiration);
@@ -42,8 +48,9 @@ public class JwtTokenUtil implements Serializable {
         return expiration.before(new Date());
     }
     //generate token for user
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(TpUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userDetails.getUserId());
         return doGenerateToken(claims, userDetails.getUsername());
     }
     //while creating the token -

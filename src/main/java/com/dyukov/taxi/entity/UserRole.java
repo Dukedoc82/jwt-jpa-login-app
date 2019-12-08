@@ -3,8 +3,8 @@ package com.dyukov.taxi.entity;
 import javax.persistence.*;
 
 @Entity
-@Table(name = "User_Role", //
-        uniqueConstraints = { //
+@Table(name = "User_Role",
+        uniqueConstraints = {
                 @UniqueConstraint(name = "USER_ROLE_UK", columnNames = { "User_Id", "Role_Id" }) })
 public class UserRole {
 
