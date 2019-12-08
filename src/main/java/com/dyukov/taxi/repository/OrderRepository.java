@@ -1,5 +1,6 @@
 package com.dyukov.taxi.repository;
 
+import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -16,9 +17,24 @@ public class OrderRepository {
     @Autowired
     private EntityManager entityManager;
 
-    public TpOrder createOrder(TpOrder order) {
+    @Autowired
+    private OrderHistoryRepository orderHistoryRepository;
+
+    @Autowired
+    private OrderStatusRepository orderStatusRepository;
+
+    @Autowired
+    private UserDetailsRepository userDetailsRepository;
+
+    public TpOrder createOrder(TpOrder order, Long retrieverUserId) {
         entityManager.persist(order);
         entityManager.flush();
+        OrderHistory orderHistory = new OrderHistory();
+        orderHistory.setOrder(order);
+        orderHistory.setDate(order.getAppointmentDate());
+        orderHistory.setOrderStatus(orderStatusRepository.getStatusByKey("tp.status.opened"));
+        orderHistory.setUpdatedBy(userDetailsRepository.findUserAccount(retrieverUserId));
+        orderHistoryRepository.createOrder(orderHistory);
         return order;
     }
 

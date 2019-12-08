@@ -24,7 +24,7 @@ public class OrderController {
 
         order.setAppointmentDate(new Date());
         addUserData(token, order);
-        return orderService.createOrder(order);
+        return orderService.createOrder(order, tokenUtil.getUserIdFromToken(token));
     }
 
     private void addUserData(String token, OrderDao order) {

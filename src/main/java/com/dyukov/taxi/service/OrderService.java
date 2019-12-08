@@ -21,9 +21,9 @@ public class OrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public OrderDao createOrder(OrderDao orderDao) {
+    public OrderDao createOrder(OrderDao orderDao, Long updatedBy) {
         TpOrder order = convertFromDto(orderDao);
-        return convertToDto(orderRepository.createOrder(order));
+        return convertToDto(orderRepository.createOrder(order, updatedBy));
     }
 
     public OrderDao getOrderById(Long id, Long retrieverUserId) {
