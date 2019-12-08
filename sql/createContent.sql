@@ -175,5 +175,7 @@ END;
 GO
 
 CREATE VIEW current_status_orders_view AS
-SELECT a.id, a.client_id, a.address_from, c.title_key FROM tp_order a, tp_order_history b, tp_status c
+SELECT a.id, a.client_id, d.first_name, d.last_name, d.phone_number, a.address_from, a.address_to, c.title_key
+FROM tp_order a, tp_order_history b, tp_status c, tp_user d
 WHERE a.id = b.order_id and b.status_id = dbo.tp_getCurrentOrderStatus(b.order_id) AND c.id = b.status_id
+        and a.client_id = d.user_id;
