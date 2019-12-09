@@ -1,12 +1,15 @@
 package com.dyukov.taxi.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "User_Role",
         uniqueConstraints = {
                 @UniqueConstraint(name = "USER_ROLE_UK", columnNames = { "User_Id", "Role_Id" }) })
-public class UserRole {
+public class UserRole implements Serializable {
+
+    private static final long serialVersionUID = -6778863180063349822L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

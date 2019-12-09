@@ -52,4 +52,18 @@ public class OrderRepository {
             return null;
         }
     }
+
+    public TpOrder getOrderById(Long orderId) {
+        try {
+            String sql = "Select e from " + TpOrder.class.getName() + " e " //
+                    + " Where e.id = :orderId";
+
+            Query query = entityManager.createQuery(sql, TpOrder.class);
+            query.setParameter("orderId", orderId);
+
+            return (TpOrder) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 }

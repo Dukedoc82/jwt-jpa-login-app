@@ -1,12 +1,15 @@
 package com.dyukov.taxi.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "Tp_Role", //
         uniqueConstraints = { //
                 @UniqueConstraint(name = "Tp_ROLE_UK", columnNames = "Role_Name") })
-public class TpRole {
+public class TpRole implements Serializable {
+
+    private static final long serialVersionUID = 5777871383733820000L;
 
     @Id
     @GeneratedValue

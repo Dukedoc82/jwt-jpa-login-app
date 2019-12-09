@@ -7,6 +7,8 @@ IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'tp_getCurrent
     DROP FUNCTION tp_getCurrentOrderStatus
 
 -- Remove tables
+if OBJECT_ID('dbo.TP_ACTUAL_ORDER', 'U') is not null
+    drop table TP_ACTUAL_ORDER;
 if OBJECT_ID('dbo.TP_ORDER_HISTORY', 'U') is not null
     drop table TP_ORDER_HISTORY;
 if OBJECT_ID('dbo.TP_STATUS', 'U') is not null
@@ -116,7 +118,6 @@ alter table TP_ORDER_HISTORY
     add constraint TP_ORDER_HISTORY_UPDATED_FK foreign key (UPDATED_BY)
         references TP_USER(USER_ID);
 
-
 SET IDENTITY_INSERT TP_User ON
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
@@ -172,10 +173,10 @@ BEGIN
     RETURN @orderStatus
 END;
 
-GO
+GO;
 
 CREATE VIEW current_status_orders_view AS
-SELECT a.id, a.client_id, d.first_name, d.last_name, d.phone_number, a.address_from, a.address_to, c.title_key
-FROM tp_order a, tp_order_history b, tp_status c, tp_user d
-WHERE a.id = b.order_id and b.status_id = dbo.tp_getCurrentOrderStatus(b.order_id) AND c.id = b.status_id
-        and a.client_id = d.user_id;
+SELECT order_info.id as id, order_info.id as order_id, hist_rec.driver_id as driver_id, status_info.id as status_id
+FROM tp_order order_info, tp_order_history hist_rec, tp_status status_info
+WHERE order_info.id = hist_rec.order_id and hist_rec.status_id = dbo.tp_getCurrentOrderStatus(hist_rec.order_id)
+  AND status_info.id = hist_rec.status_id

@@ -1,11 +1,14 @@
 package com.dyukov.taxi.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 @Entity
 @Table(name = "Tp_Order")
-public class TpOrder {
+public class TpOrder implements Serializable {
+
+    private static final long serialVersionUID = -5272882102371005414L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

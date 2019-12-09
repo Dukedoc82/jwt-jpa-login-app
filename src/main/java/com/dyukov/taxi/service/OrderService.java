@@ -1,13 +1,16 @@
 package com.dyukov.taxi.service;
 
 import com.dyukov.taxi.dao.OrderDao;
+import com.dyukov.taxi.entity.ActualOrder;
 import com.dyukov.taxi.entity.TpOrder;
-import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.repository.ActualOrderRepository;
 import com.dyukov.taxi.repository.OrderRepository;
 import com.dyukov.taxi.repository.UserDetailsRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 @Service
 public class OrderService {
@@ -19,6 +22,9 @@ public class OrderService {
     private UserDetailsRepository userDetailsRepository;
 
     @Autowired
+    private ActualOrderRepository actualOrderRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     public OrderDao createOrder(OrderDao orderDao, Long updatedBy) {
@@ -28,6 +34,14 @@ public class OrderService {
 
     public OrderDao getOrderById(Long id, Long retrieverUserId) {
         return convertToDto(orderRepository.getOrderById(id, retrieverUserId));
+    }
+
+    public OrderDao getOrderById(Long id) {
+        return convertToDto(orderRepository.getOrderById(id));
+    }
+
+    public Collection<ActualOrder> getActualOrders() {
+        return actualOrderRepository.getAll();
     }
 
     private TpOrder convertFromDto(OrderDao orderDao) {
