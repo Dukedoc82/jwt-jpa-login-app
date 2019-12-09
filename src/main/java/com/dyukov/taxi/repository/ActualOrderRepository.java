@@ -27,4 +27,16 @@ public class ActualOrderRepository {
             return new ArrayList<>();
         }
     }
+
+    public ActualOrder getById(Long id) {
+        try {
+            String sql = "Select e from " + ActualOrder.class.getName() + " e " +
+                    "where e.id = :orderId";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("orderId", id);
+            return (ActualOrder) query.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 }
