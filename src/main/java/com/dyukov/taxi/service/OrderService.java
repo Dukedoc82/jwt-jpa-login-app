@@ -5,6 +5,7 @@ import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.ActualOrder;
 import com.dyukov.taxi.entity.TpOrder;
+import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.repository.ActualOrderRepository;
 import com.dyukov.taxi.repository.OrderRepository;
 import com.dyukov.taxi.repository.UserDetailsRepository;
@@ -49,10 +50,14 @@ public class OrderService {
 
     public ActualOrderDao assignOrderToDriver(ActualOrderDao orderDao, Long driverId, Long updatedBy) {
         ActualOrder actualOrder = actualOrderRepository.getById(orderDao.getId());
-        if (isOrderAssignable(actualOrder, driverId)) {
-            return convertToDto(orderRepository.assignOrderToDriver(actualOrder.getOrder(), driverId, updatedBy));
+        if (actualOrder != null) {
+            if (isOrderAssignable(actualOrder, driverId)) {
+                return convertToDto(orderRepository.assignOrderToDriver(actualOrder.getOrder(), driverId, updatedBy));
+            }
+            return convertToDto(actualOrder);
+        } else {
+            throw new TaxiServiceException(1);
         }
-        return convertToDto(actualOrder);
     }
 
     private Collection<ActualOrderDao> convertToDto(List<ActualOrder> actualOrders) {
@@ -67,6 +72,24 @@ public class OrderService {
         TpOrder order = modelMapper.map(orderDao, TpOrder.class);
         order.setClient(userDetailsRepository.findUserAccount(orderDao.getClient().getUserId()));
         return order;
+    }
+
+    public ActualOrderDao cancelOrder(Long orderId, Long retrieverUserId) {
+        ActualOrder actualOrder = actualOrderRepository.getById(orderId);
+        if (actualOrder.getOrder().getClient().getUserId().equals(retrieverUserId)) {
+            if (isOrderCancellable(actualOrder)) {
+                return convertToDto(actualOrderRepository.cancelOrder(actualOrder));
+            } else {
+                throw new TaxiServiceException(2);
+            }
+        } else {
+            throw new TaxiServiceException(3);
+        }
+    }
+
+    private boolean isOrderCancellable(ActualOrder actualOrder) {
+        String status = actualOrder.getStatus().getTitleKey();
+        return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED);
     }
 
     private boolean isOrderAssignable(ActualOrder actualOrder, Long driverId) {

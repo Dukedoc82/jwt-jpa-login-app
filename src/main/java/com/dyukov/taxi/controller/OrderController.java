@@ -25,9 +25,17 @@ public class OrderController {
     }
 
     @RequestMapping(value = "/{id}")
-    public ActualOrderDao getOrderById(@CookieValue(value = "userToken", defaultValue = "") String token, @PathVariable("id") Long orderId) {
+    public ActualOrderDao getOrderById(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                       @PathVariable("id") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getOrderById(orderId, retrieverUserId);
+    }
+
+    @RequestMapping(value = "/cancel/{id}")
+    public ActualOrderDao cancelOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                      @PathVariable("id") Long orderId) {
+        Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
+        return orderService.cancelOrder(orderId, retrieverUserId);
     }
 
     private void addUserData(String token, OrderDao order) {

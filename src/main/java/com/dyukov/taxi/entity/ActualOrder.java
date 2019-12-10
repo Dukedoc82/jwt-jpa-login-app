@@ -1,6 +1,7 @@
 package com.dyukov.taxi.entity;
 
 import org.springframework.data.annotation.Immutable;
+import org.springframework.lang.NonNull;
 
 import javax.persistence.*;
 
@@ -32,6 +33,7 @@ public class ActualOrder {
         this.id = id;
     }
 
+    @NonNull
     public TpOrder getOrder() {
         return order;
     }
