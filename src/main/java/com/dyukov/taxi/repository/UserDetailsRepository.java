@@ -8,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.util.ArrayList;
+import java.util.Collection;
 
 @Repository
 @Transactional
@@ -30,6 +32,16 @@ public class UserDetailsRepository {
             return (TpUser) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
+        }
+    }
+
+    public Collection<TpUser> findAll() {
+        try {
+            String sql = "Select e from " + TpUser.class.getName() + " e";
+            Query query = entityManager.createQuery(sql);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList<>();
         }
     }
 

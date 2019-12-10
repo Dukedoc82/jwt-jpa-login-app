@@ -1,7 +1,9 @@
 package com.dyukov.taxi.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
@@ -16,8 +18,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -55,9 +55,8 @@ public class JwtUserDetailsService implements UserDetailsService {
             }
         }
 
-        return new TpUserDetails(tpUser.getUserId(), tpUser.getUserName(), //
+        return new TpUserDetails(convertToDTO(tpUser), tpUser.getUserName(), //
                 tpUser.getEncrytedPassword(), grantList);
-
     }
 
     public UserDao save(RegistrationData registrationData) {
@@ -78,6 +77,10 @@ public class JwtUserDetailsService implements UserDetailsService {
         return convertToDTO(savedUser);
     }
 
+    public Collection<UserDao> findAll() {
+        return convertToDao(userDetailsRepository.findAll());
+    }
+
     private UserDao convertToDTO(TpUser tpUser) {
         return modelMapper.map(tpUser, UserDao.class);
     }
@@ -87,5 +90,9 @@ public class JwtUserDetailsService implements UserDetailsService {
         tpUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(registrationData.getPassword()));
         tpUser.setEnabled(true);
         return tpUser;
+    }
+
+    private Collection<UserDao> convertToDao(Collection<TpUser> entityUsers) {
+        return entityUsers.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 }

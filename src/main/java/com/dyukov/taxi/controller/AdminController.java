@@ -2,6 +2,8 @@ package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.dao.OrderDao;
+import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.service.JwtUserDetailsService;
 import com.dyukov.taxi.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,6 +19,9 @@ public class AdminController {
     @Autowired
     private OrderService orderService;
 
+    @Autowired
+    private JwtUserDetailsService userDetailsService;
+
     @RequestMapping("/actualOrder")
     public Collection<ActualOrderDao> getActualOrders() {
         return orderService.getActualOrders();
@@ -25,5 +30,10 @@ public class AdminController {
     @RequestMapping(value = "/order/{id}")
     public OrderDao getOrderById(@PathVariable("id") Long orderId) {
         return orderService.getOrderById(orderId);
+    }
+
+    @RequestMapping("/user")
+    public Collection<UserDao> getAllUsers() {
+        return userDetailsService.findAll();
     }
 }

@@ -29,28 +29,20 @@ public class JwtAuthenticationController {
 
         private String uri;
 
-        private Long userId;
+        private UserDao user;
 
-        private String userLogin;
-
-        AuthData(String uri, Long userId, String userLogin) {
+        AuthData(String uri, UserDao user) {
             this.uri = uri;
-            this.userId = userId;
-            this.userLogin = userLogin;
+            this.user = user;
         }
 
         public String getUri() {
             return uri;
         }
 
-        public Long getUserId() {
-            return userId;
+        public UserDao getUser() {
+            return user;
         }
-
-        public String getUserLogin() {
-            return userLogin;
-        }
-
     }
 
     @Autowired
@@ -88,7 +80,7 @@ public class JwtAuthenticationController {
             }
         }
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthData(targetUrl, userDetails.getUserId(), userDetails.getUsername()));
+                .body(new AuthData(targetUrl, userDetails.getUser()));
     }
 
     private String getAdminUrl(String targetUrl) {

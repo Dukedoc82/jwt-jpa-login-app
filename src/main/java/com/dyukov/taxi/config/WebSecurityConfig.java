@@ -60,16 +60,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         httpSecurity.csrf().disable()
                 // dont authenticate this particular request
                 .authorizeRequests().antMatchers("/authenticate", "/register", "/registerAsADriver").permitAll().
-                // all other requests need to be authenticated
-                        //anyRequest().authenticated().
-
-
                 antMatchers("/new", "/admin/**").
                         hasAuthority("ROLE_ADMIN").
                 antMatchers("/driver/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_DRIVER").
                 antMatchers("/hello", "/order/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_USER", "ROLE_DRIVER").
+                anyRequest().authenticated().
                 and().
                     formLogin().loginPage("/login.html").permitAll().
                 and().
@@ -77,18 +74,18 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .logoutUrl("/logout")
                     .deleteCookies("userToken")
                     .invalidateHttpSession(true).permitAll().
-                and().
+                /*and().
                     sessionManagement()
                         .maximumSessions(1).
                 and()
                     .invalidSessionUrl("/login.html").
-                sessionAuthenticationErrorUrl("/login.html").
+                sessionAuthenticationErrorUrl("/login.html").*/
                 and().
 
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
                         exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
-                        .accessDeniedPage("/login.html")
+                        //.accessDeniedPage("/login.html")
 
                 .and().
                     sessionManagement()
