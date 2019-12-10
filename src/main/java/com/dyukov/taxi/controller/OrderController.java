@@ -1,6 +1,7 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
+import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.OrderService;
@@ -18,18 +19,16 @@ public class OrderController {
     private OrderService orderService;
 
     @RequestMapping(value = "new", method = RequestMethod.POST)
-    public OrderDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token, @RequestBody OrderDao order) {
+    public ActualOrderDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token, @RequestBody OrderDao order) {
         addUserData(token, order);
         return orderService.createOrder(order, tokenUtil.getUserIdFromToken(token));
     }
 
     @RequestMapping(value = "/{id}")
-    public OrderDao getOrderById(@CookieValue(value = "userToken", defaultValue = "") String token, @PathVariable("id") Long orderId) {
+    public ActualOrderDao getOrderById(@CookieValue(value = "userToken", defaultValue = "") String token, @PathVariable("id") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getOrderById(orderId, retrieverUserId);
     }
-
-
 
     private void addUserData(String token, OrderDao order) {
         UserDao client = new UserDao();

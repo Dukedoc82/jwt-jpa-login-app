@@ -3,7 +3,6 @@ package com.dyukov.taxi.repository;
 import com.dyukov.taxi.entity.ActualOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-@Transactional
 public class ActualOrderRepository {
 
     @Autowired
@@ -31,7 +29,7 @@ public class ActualOrderRepository {
     public ActualOrder getById(Long id) {
         try {
             String sql = "Select e from " + ActualOrder.class.getName() + " e " +
-                    "where e.id = :orderId";
+                    "where e.order.id = :orderId";
             Query query = entityManager.createQuery(sql);
             query.setParameter("orderId", id);
             return (ActualOrder) query.getSingleResult();

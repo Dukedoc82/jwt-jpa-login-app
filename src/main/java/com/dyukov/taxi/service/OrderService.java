@@ -1,5 +1,6 @@
 package com.dyukov.taxi.service;
 
+import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.ActualOrder;
@@ -30,16 +31,15 @@ public class OrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public OrderDao createOrder(OrderDao orderDao, Long updatedBy) {
-        TpOrder order = convertFromDto(orderDao);
-        return convertToDto(orderRepository.createOrder(order, updatedBy));
+    public ActualOrderDao createOrder(OrderDao orderDao, Long updatedBy) {
+        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), updatedBy));
     }
 
-    public OrderDao getOrderById(Long id, Long retrieverUserId) {
+    public ActualOrderDao getOrderById(Long id, Long retrieverUserId) {
         return convertToDto(orderRepository.getOrderById(id, retrieverUserId));
     }
 
-    public OrderDao getOrderById(Long id) {
+    public ActualOrderDao getOrderById(Long id) {
         return convertToDto(orderRepository.getOrderById(id));
     }
 
@@ -47,10 +47,12 @@ public class OrderService {
         return convertToDto(actualOrderRepository.getAll());
     }
 
-    public ActualOrderDao assignOrderToDriver(OrderDao orderDao, Long driverId, Long updatedBy) {
-        orderDao = convertToDto(orderRepository.getOrderById(orderDao.getId()));
-        TpOrder order = convertFromDto(orderDao);
-        return convertToDto(orderRepository.assignOrderToDriver(order, driverId, updatedBy));
+    public ActualOrderDao assignOrderToDriver(ActualOrderDao orderDao, Long driverId, Long updatedBy) {
+        ActualOrder actualOrder = actualOrderRepository.getById(orderDao.getId());
+        if (isOrderAssignable(actualOrder, driverId)) {
+            return convertToDto(orderRepository.assignOrderToDriver(actualOrder.getOrder(), driverId, updatedBy));
+        }
+        return convertToDto(actualOrder);
     }
 
     private Collection<ActualOrderDao> convertToDto(List<ActualOrder> actualOrders) {
@@ -67,15 +69,9 @@ public class OrderService {
         return order;
     }
 
-    private OrderDao convertToDto(TpOrder order) {
-        return order == null ? null : modelMapper.map(order, OrderDao.class);
-    }
-
-    private ActualOrder convertToDto(ActualOrderDao orderDao) {
-        return orderDao == null ? null : modelMapper.map(orderDao, ActualOrder.class);
-    }
-
-    private ActualOrderDao convertFromDto(ActualOrder order) {
-        return order == null ? null : modelMapper.map(order, ActualOrderDao.class);
+    private boolean isOrderAssignable(ActualOrder actualOrder, Long driverId) {
+        String status = actualOrder.getStatus().getTitleKey();
+        return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED) &&
+                !(status.equals(OrderStatuses.ASSIGNED) && actualOrder.getDriver().getUserId().equals(driverId));
     }
 }

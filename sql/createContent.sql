@@ -2,13 +2,6 @@ IF EXISTS(select * from sys.views WHERE NAME = 'current_status_orders_view')
     DROP VIEW current_status_orders_view;
 GO;
 
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'tp_getCurrentOrderStatus')
-                                       AND type in (N'FN', N'IF',N'TF', N'FS', N'FT'))
-    DROP FUNCTION tp_getCurrentOrderStatus
-
--- Remove tables
-if OBJECT_ID('dbo.TP_ACTUAL_ORDER', 'U') is not null
-    drop table TP_ACTUAL_ORDER;
 if OBJECT_ID('dbo.TP_ORDER_HISTORY', 'U') is not null
     drop table TP_ORDER_HISTORY;
 if OBJECT_ID('dbo.TP_STATUS', 'U') is not null
@@ -161,22 +154,13 @@ INSERT INTO tp_status VALUES (4, 'tp.status.completed');
 
 go;
 
-CREATE FUNCTION tp_getCurrentOrderStatus(@orderId INT)
-    RETURNS INT
-AS
-BEGIN
-    DECLARE @orderStatus INT
-    SET @orderStatus = (SELECT MAX(a.status_id) FROM
-        (SELECT TOP(1) o.id, h.status_id FROM tp_order o, tp_order_history h
-         WHERE o.id = h.order_id AND o.id = @orderId
-         ORDER BY h.update_datetime DESC) a)
-    RETURN @orderStatus
-END;
-
-GO;
-
 CREATE VIEW current_status_orders_view AS
-SELECT order_info.id as id, order_info.id as order_id, hist_rec.driver_id as driver_id, status_info.id as status_id
-FROM tp_order order_info, tp_order_history hist_rec, tp_status status_info
-WHERE order_info.id = hist_rec.order_id and hist_rec.status_id = dbo.tp_getCurrentOrderStatus(hist_rec.order_id)
-  AND status_info.id = hist_rec.status_id
+Select b.* from (
+                 SELECT
+                        ORDER_ID,
+                        MAX(UPDATE_DATETIME) as upd_time
+                 FROM TP_ORDER_HISTORY
+                 GROUP BY ORDER_ID
+                ) as a,
+                TP_ORDER_HISTORY as b
+where b.ORDER_ID = a.ORDER_ID AND b.UPDATE_DATETIME = a.upd_time;

@@ -6,6 +6,7 @@ import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
@@ -32,47 +33,53 @@ public class OrderRepository {
     @Autowired
     private UserDetailsRepository userDetailsRepository;
 
-    public TpOrder createOrder(TpOrder order, Long retrieverUserId) {
+    public ActualOrder createOrder(TpOrder order, Long retrieverUserId) {
         entityManager.persist(order);
         entityManager.flush();
         OrderHistory orderHistory = updateOrderHistory(order, retrieverUserId, "tp.status.opened");
         orderHistoryRepository.createOrder(orderHistory);
-        return order;
+        return actualOrderRepository.getById(order.getId());
     }
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public ActualOrder assignOrderToDriver(TpOrder order, Long driverId, Long retrieverUserId) {
+        updateOrderAssignDriver(order, driverId, retrieverUserId);
+        return actualOrderRepository.getById(order.getId());
+    }
+
+    private TpOrder updateOrderAssignDriver(TpOrder order, Long driverId, Long retrieverUserId) {
         OrderHistory orderHistory = updateOrderHistory(order, retrieverUserId, "tp.status.assigned");
         TpUser driver = userDetailsRepository.findUserAccount(driverId);
         orderHistory.setDriver(driver);
         orderHistory.setUpdatedBy(driver);
         orderHistoryRepository.createOrder(orderHistory);
-        return actualOrderRepository.getById(order.getId());
+        return order;
     }
 
-    public TpOrder getOrderById(Long orderId, Long retrieverUserId) {
+    public ActualOrder getOrderById(Long orderId, Long retrieverUserId) {
         try {
-            String sql = "Select e from " + TpOrder.class.getName() + " e " //
-                    + " Where e.id = :orderId AND e.client.userId = :userId";
+            String sql = "Select e from " + ActualOrder.class.getName() + " e " //
+                    + " Where e.id = :orderId AND (e.order.client.userId = :userId OR e.driver.userId = :userId)";
 
-            Query query = entityManager.createQuery(sql, TpOrder.class);
+            Query query = entityManager.createQuery(sql, ActualOrder.class);
             query.setParameter("orderId", orderId);
             query.setParameter("userId", retrieverUserId);
 
-            return (TpOrder) query.getSingleResult();
+            return (ActualOrder) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
 
-    public TpOrder getOrderById(Long orderId) {
+    public ActualOrder getOrderById(Long orderId) {
         try {
-            String sql = "Select e from " + TpOrder.class.getName() + " e " //
+            String sql = "Select e from " + ActualOrder.class.getName() + " e " //
                     + " Where e.id = :orderId";
 
-            Query query = entityManager.createQuery(sql, TpOrder.class);
+            Query query = entityManager.createQuery(sql, ActualOrder.class);
             query.setParameter("orderId", orderId);
 
-            return (TpOrder) query.getSingleResult();
+            return (ActualOrder) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
