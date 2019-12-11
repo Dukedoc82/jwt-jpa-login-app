@@ -8,7 +8,6 @@ import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.impl.ActualOrderRepository;
-import com.dyukov.taxi.repository.impl.OrderRepository;
 import com.dyukov.taxi.service.IOrderService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +21,6 @@ import java.util.stream.Collectors;
 public class OrderService implements IOrderService {
 
     @Autowired
-    private OrderRepository orderRepository;
-
-    @Autowired
     private IUserDetailsRepository userDetailsRepository;
 
     @Autowired
@@ -34,7 +30,7 @@ public class OrderService implements IOrderService {
     private ModelMapper modelMapper;
 
     public ActualOrderDao createOrder(OrderDao orderDao, Long updatedBy) {
-        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), updatedBy));
+        return convertToDto(actualOrderRepository.createOrder(convertFromDto(orderDao), updatedBy));
     }
 
     public ActualOrderDao getOrderById(Long id, Long retrieverUserId) {
@@ -42,7 +38,7 @@ public class OrderService implements IOrderService {
     }
 
     public ActualOrderDao getOrderById(Long id) {
-        return convertToDto(orderRepository.getOrderById(id));
+        return convertToDto(actualOrderRepository.getById(id));
     }
 
     public Collection<ActualOrderDao> getActualOrders() {
@@ -53,7 +49,8 @@ public class OrderService implements IOrderService {
         ActualOrder actualOrder = actualOrderRepository.getById(orderDao.getId());
         if (actualOrder != null) {
             if (isOrderAssignable(actualOrder, driverId)) {
-                return convertToDto(orderRepository.assignOrderToDriver(actualOrder.getOrder(), driverId, updatedBy));
+                return convertToDto(actualOrderRepository.assignOrderToDriver(actualOrder.getOrder().getId(),
+                        driverId, updatedBy));
             }
             return convertToDto(actualOrder);
         } else {
