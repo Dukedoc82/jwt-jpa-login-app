@@ -1,4 +1,4 @@
-package com.dyukov.taxi.service;
+package com.dyukov.taxi.service.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,8 +9,9 @@ import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.model.TpUserDetails;
-import com.dyukov.taxi.repository.UserDetailsRepository;
-import com.dyukov.taxi.repository.UserRoleRepository;
+import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.repository.IUserRoleRepository;
+import com.dyukov.taxi.service.IUserDetailsService;
 import com.dyukov.taxi.utils.EncryptedPasswordUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -23,15 +24,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class JwtUserDetailsService implements UserDetailsService {
+public class JwtUserDetailsService implements IUserDetailsService, UserDetailsService {
 
     private final Log logger = LogFactory.getLog(getClass());
 
     @Autowired
-    private UserDetailsRepository userDetailsRepository;
+    private IUserDetailsRepository userDetailsRepository;
 
     @Autowired
-    private UserRoleRepository userRoleRepository;
+    private IUserRoleRepository userRoleRepository;
 
     @Autowired
     private ModelMapper modelMapper;

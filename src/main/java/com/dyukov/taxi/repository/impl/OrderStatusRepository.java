@@ -1,16 +1,17 @@
-package com.dyukov.taxi.repository;
+package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpOrderStatus;
+import com.dyukov.taxi.repository.IOrderStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
-import java.util.List;
+import java.util.Collection;
 
 @Repository
-public class OrderStatusRepository {
+public class OrderStatusRepository implements IOrderStatusRepository {
 
     @Autowired
     private EntityManager entityManager;
@@ -29,7 +30,7 @@ public class OrderStatusRepository {
         }
     }
 
-    public List getAvailableStatuses() {
+    public Collection getAvailableStatuses() {
         try {
             String sql = "Select e from " + TpOrderStatus.class.getName() + " e";
 

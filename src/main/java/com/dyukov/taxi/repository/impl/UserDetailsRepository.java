@@ -1,6 +1,8 @@
-package com.dyukov.taxi.repository;
+package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.repository.IUserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,13 +15,13 @@ import java.util.Collection;
 
 @Repository
 @Transactional
-public class UserDetailsRepository {
+public class UserDetailsRepository implements IUserDetailsRepository {
 
     @Autowired
     private EntityManager entityManager;
 
     @Autowired
-    private UserRoleRepository userRoleRepository;
+    private IUserRoleRepository userRoleRepository;
 
     public TpUser findUserAccount(String userName) {
         try {

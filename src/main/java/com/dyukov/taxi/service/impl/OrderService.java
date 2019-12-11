@@ -1,4 +1,4 @@
-package com.dyukov.taxi.service;
+package com.dyukov.taxi.service.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.dao.ActualOrderDao;
@@ -6,9 +6,10 @@ import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.ActualOrder;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.exception.TaxiServiceException;
-import com.dyukov.taxi.repository.ActualOrderRepository;
-import com.dyukov.taxi.repository.OrderRepository;
-import com.dyukov.taxi.repository.UserDetailsRepository;
+import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.repository.impl.ActualOrderRepository;
+import com.dyukov.taxi.repository.impl.OrderRepository;
+import com.dyukov.taxi.service.IOrderService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,13 +19,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class OrderService {
+public class OrderService implements IOrderService {
 
     @Autowired
     private OrderRepository orderRepository;
 
     @Autowired
-    private UserDetailsRepository userDetailsRepository;
+    private IUserDetailsRepository userDetailsRepository;
 
     @Autowired
     private ActualOrderRepository actualOrderRepository;
@@ -37,7 +38,7 @@ public class OrderService {
     }
 
     public ActualOrderDao getOrderById(Long id, Long retrieverUserId) {
-        return convertToDto(orderRepository.getOrderById(id, retrieverUserId));
+        return convertToDto(actualOrderRepository.getById(id, retrieverUserId));
     }
 
     public ActualOrderDao getOrderById(Long id) {

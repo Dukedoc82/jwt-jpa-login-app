@@ -1,8 +1,9 @@
-package com.dyukov.taxi.repository;
+package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpRole;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserRole;
+import com.dyukov.taxi.repository.IUserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +14,7 @@ import java.util.List;
 
 @Repository
 @Transactional
-public class UserRoleRepository {
+public class UserRoleRepository implements IUserRoleRepository {
 
     @Autowired
     private EntityManager entityManager;

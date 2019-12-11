@@ -1,7 +1,7 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.entity.TpOrderStatus;
-import com.dyukov.taxi.service.OrderStatusService;
+import com.dyukov.taxi.service.IOrderStatusService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import java.util.Collection;
 public class OrderStatusController {
 
     @Autowired
-    private OrderStatusService orderStatusService;
+    private IOrderStatusService orderStatusService;
 
     @RequestMapping("/")
     public Collection<TpOrderStatus> getAvailableStatuses() {

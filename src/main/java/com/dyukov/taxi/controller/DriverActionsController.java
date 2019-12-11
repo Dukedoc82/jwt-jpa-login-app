@@ -2,7 +2,7 @@ package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.ActualOrderDao;
-import com.dyukov.taxi.service.OrderService;
+import com.dyukov.taxi.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 public class DriverActionsController {
 
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
 
     @Autowired
     private JwtTokenUtil tokenUtil;
