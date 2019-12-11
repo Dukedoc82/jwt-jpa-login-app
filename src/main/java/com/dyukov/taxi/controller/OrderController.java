@@ -8,6 +8,8 @@ import com.dyukov.taxi.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
+
 @RestController
 @RequestMapping("/order")
 public class OrderController {
@@ -31,11 +33,17 @@ public class OrderController {
         return orderService.getOrderById(orderId, retrieverUserId);
     }
 
-    @RequestMapping(value = "/cancel/{id}")
+    @RequestMapping(value = "/cancel/{id}", method = RequestMethod.POST)
     public ActualOrderDao cancelOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
-                                      @PathVariable("id") Long orderId) {
+                                      @RequestBody ActualOrderDao orderDao) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
-        return orderService.cancelOrder(orderId, retrieverUserId);
+        return orderService.cancelOrder(orderDao.getId(), retrieverUserId);
+    }
+
+    @RequestMapping(value = "/orders", method = RequestMethod.GET)
+    public Collection<ActualOrderDao> getUserOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+        Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
+        return orderService.getActualUserOrders(retrieverUserId);
     }
 
     private void addUserData(String token, OrderDao order) {

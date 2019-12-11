@@ -80,10 +80,30 @@ public class OrderService {
             if (isOrderCancellable(actualOrder)) {
                 return convertToDto(actualOrderRepository.cancelOrder(actualOrder));
             } else {
-                throw new TaxiServiceException(2);
+                return convertToDto(actualOrder);
             }
         } else {
+            throw new TaxiServiceException(2);
+        }
+    }
+
+    public ActualOrderDao completeOrder(Long orderId, Long driverId) {
+        ActualOrder actualOrder = actualOrderRepository.getById(orderId);
+        if (actualOrder.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
+                && driverId.equals(actualOrder.getDriver().getUserId())) {
+            return convertToDto(actualOrderRepository.completeOrder(actualOrder));
+        } else {
             throw new TaxiServiceException(3);
+        }
+    }
+
+    public ActualOrderDao refuseOrder(Long id, Long driverId) {
+        ActualOrder actualOrder = actualOrderRepository.getById(id);
+        if (actualOrder.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
+                && driverId.equals(actualOrder.getDriver().getUserId())) {
+            return convertToDto(actualOrderRepository.refuseOrder(actualOrder));
+        } else {
+            throw new TaxiServiceException(4);
         }
     }
 
@@ -96,5 +116,9 @@ public class OrderService {
         String status = actualOrder.getStatus().getTitleKey();
         return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED) &&
                 !(status.equals(OrderStatuses.ASSIGNED) && actualOrder.getDriver().getUserId().equals(driverId));
+    }
+
+    public Collection<ActualOrderDao> getActualUserOrders(Long retrieverUserId) {
+        return actualOrderRepository.getAllUserOrders(retrieverUserId);
     }
 }

@@ -22,7 +22,20 @@ public class DriverActionsController {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
 
         return orderService.assignOrderToDriver(orderDao, retrieverUserId, retrieverUserId);
+    }
 
+    @RequestMapping(value = "/completeOrder", method = RequestMethod.POST)
+    public ActualOrderDao completeOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                        @RequestBody ActualOrderDao orderDao) {
+        Long driverId = tokenUtil.getUserIdFromToken(token);
+        return orderService.completeOrder(orderDao.getId(), driverId);
+    }
+
+    @RequestMapping(value = "/refuseOrder", method = RequestMethod.POST)
+    public ActualOrderDao refuseOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                      @RequestBody ActualOrderDao orderDao) {
+        Long driverId = tokenUtil.getUserIdFromToken(token);
+        return orderService.refuseOrder(orderDao.getId(), driverId);
     }
 
 }

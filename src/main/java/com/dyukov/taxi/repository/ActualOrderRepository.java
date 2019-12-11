@@ -1,6 +1,7 @@
 package com.dyukov.taxi.repository;
 
 import com.dyukov.taxi.config.OrderStatuses;
+import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.entity.ActualOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
@@ -12,6 +13,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Repository
@@ -35,6 +37,19 @@ public class ActualOrderRepository {
         }
     }
 
+    @NonNull
+    public Collection<ActualOrderDao> getAllUserOrders(Long retrieverUserId) {
+        try {
+            String sql = "Select e from " + ActualOrder.class.getName() + " e " +
+                    "where e.order.client.userId = :userId";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("userId", retrieverUserId);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList<>();
+        }
+    }
+
     @Nullable
     public ActualOrder getById(Long id) {
         try {
@@ -49,7 +64,20 @@ public class ActualOrderRepository {
     }
 
     public ActualOrder cancelOrder(ActualOrder actualOrder) {
-        actualOrder.setStatus(orderStatusRepository.getStatusByKey(OrderStatuses.CANCELED));
+        return updateOrderStatus(actualOrder, OrderStatuses.CANCELED);
+    }
+
+    public ActualOrder completeOrder(ActualOrder actualOrder) {
+        return updateOrderStatus(actualOrder, OrderStatuses.COMPLETED);
+    }
+
+    public ActualOrder refuseOrder(ActualOrder actualOrder) {
+        actualOrder.setDriver(null);
+        return updateOrderStatus(actualOrder, OrderStatuses.OPENED);
+    }
+
+    private ActualOrder updateOrderStatus(ActualOrder actualOrder, String newStatus) {
+        actualOrder.setStatus(orderStatusRepository.getStatusByKey(newStatus));
         entityManager.persist(actualOrder);
         entityManager.flush();
         return actualOrder;
