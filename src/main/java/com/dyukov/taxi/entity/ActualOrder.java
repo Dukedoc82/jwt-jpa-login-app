@@ -12,6 +12,7 @@ import javax.persistence.*;
 public class ActualOrder {
 
     @Id
+    @JsonIgnore
     private Long id;
 
     @ManyToOne

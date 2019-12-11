@@ -28,14 +28,14 @@ public class DriverActionsController {
     public ActualOrderDao completeOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
                                         @RequestBody ActualOrderDao orderDao) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
-        return orderService.completeOrder(orderDao.getId(), driverId);
+        return orderService.completeOrder(orderDao.getOrder().getId(), driverId);
     }
 
     @RequestMapping(value = "/refuseOrder", method = RequestMethod.POST)
     public ActualOrderDao refuseOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
                                       @RequestBody ActualOrderDao orderDao) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
-        return orderService.refuseOrder(orderDao.getId(), driverId);
+        return orderService.refuseOrder(orderDao.getOrder().getId(), driverId);
     }
 
 }

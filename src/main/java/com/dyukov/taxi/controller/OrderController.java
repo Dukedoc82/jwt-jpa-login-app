@@ -37,7 +37,7 @@ public class OrderController {
     public ActualOrderDao cancelOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
                                       @RequestBody ActualOrderDao orderDao) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
-        return orderService.cancelOrder(orderDao.getId(), retrieverUserId);
+        return orderService.cancelOrder(orderDao.getOrder().getId(), retrieverUserId);
     }
 
     @RequestMapping(value = "/orders", method = RequestMethod.GET)
