@@ -15,7 +15,7 @@ public interface IOrderService {
 
     Collection<OrderDetailsDao> getActualOrders();
 
-    OrderDetailsDao assignOrderToDriver(OrderDetailsDao orderDao, Long driverId, Long updatedBy);
+    OrderDetailsDao assignOrderToDriver(Long orderId, Long driverId, Long updatedBy);
 
     OrderDetailsDao cancelOrder(Long orderId, Long retrieverUserId);
 

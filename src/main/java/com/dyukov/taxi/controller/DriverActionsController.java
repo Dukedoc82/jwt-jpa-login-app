@@ -21,7 +21,7 @@ public class DriverActionsController {
                                        @RequestBody OrderDetailsDao orderDao) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
 
-        return orderService.assignOrderToDriver(orderDao, retrieverUserId, retrieverUserId);
+        return orderService.assignOrderToDriver(orderDao.getOrder().getId(), retrieverUserId, retrieverUserId);
     }
 
     @RequestMapping(value = "/completeOrder", method = RequestMethod.POST)

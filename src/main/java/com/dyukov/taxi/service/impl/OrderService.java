@@ -44,8 +44,8 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.getAll());
     }
 
-    public OrderDetailsDao assignOrderToDriver(OrderDetailsDao orderDao, Long driverId, Long updatedBy) {
-        OrderDetails orderDetails = orderRepository.getById(orderDao.getOrder().getId());
+    public OrderDetailsDao assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
+        OrderDetails orderDetails = orderRepository.getById(orderId);
         if (orderDetails != null) {
             if (isOrderAssignable(orderDetails, driverId)) {
                 return convertToDto(orderRepository.assignOrderToDriver(orderDetails.getOrder().getId(),
