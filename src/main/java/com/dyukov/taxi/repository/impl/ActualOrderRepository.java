@@ -1,11 +1,11 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.entity.ActualOrder;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
+import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +20,10 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 
 @Repository
 @Transactional
-public class ActualOrderRepository {
+public class ActualOrderRepository implements IOrderRepository {
 
     @Autowired
     private EntityManager entityManager;
@@ -39,7 +38,7 @@ public class ActualOrderRepository {
     private IOrderHistoryRepository orderHistoryRepository;
 
     @NonNull
-    public List getAll() {
+    public Collection getAll() {
         try {
             String sql = "Select e from " + ActualOrder.class.getName() + " e";
             Query query = entityManager.createQuery(sql);

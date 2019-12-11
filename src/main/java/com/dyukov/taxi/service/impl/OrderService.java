@@ -6,15 +6,14 @@ import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.ActualOrder;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.exception.TaxiServiceException;
+import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
-import com.dyukov.taxi.repository.impl.ActualOrderRepository;
 import com.dyukov.taxi.service.IOrderService;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,32 +23,32 @@ public class OrderService implements IOrderService {
     private IUserDetailsRepository userDetailsRepository;
 
     @Autowired
-    private ActualOrderRepository actualOrderRepository;
+    private IOrderRepository orderRepository;
 
     @Autowired
     private ModelMapper modelMapper;
 
     public ActualOrderDao createOrder(OrderDao orderDao, Long updatedBy) {
-        return convertToDto(actualOrderRepository.createOrder(convertFromDto(orderDao), updatedBy));
+        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), updatedBy));
     }
 
     public ActualOrderDao getOrderById(Long id, Long retrieverUserId) {
-        return convertToDto(actualOrderRepository.getById(id, retrieverUserId));
+        return convertToDto(orderRepository.getById(id, retrieverUserId));
     }
 
     public ActualOrderDao getOrderById(Long id) {
-        return convertToDto(actualOrderRepository.getById(id));
+        return convertToDto(orderRepository.getById(id));
     }
 
     public Collection<ActualOrderDao> getActualOrders() {
-        return convertToDto(actualOrderRepository.getAll());
+        return convertToDto(orderRepository.getAll());
     }
 
     public ActualOrderDao assignOrderToDriver(ActualOrderDao orderDao, Long driverId, Long updatedBy) {
-        ActualOrder actualOrder = actualOrderRepository.getById(orderDao.getOrder().getId());
+        ActualOrder actualOrder = orderRepository.getById(orderDao.getOrder().getId());
         if (actualOrder != null) {
             if (isOrderAssignable(actualOrder, driverId)) {
-                return convertToDto(actualOrderRepository.assignOrderToDriver(actualOrder.getOrder().getId(),
+                return convertToDto(orderRepository.assignOrderToDriver(actualOrder.getOrder().getId(),
                         driverId, updatedBy));
             }
             return convertToDto(actualOrder);
@@ -58,7 +57,7 @@ public class OrderService implements IOrderService {
         }
     }
 
-    private Collection<ActualOrderDao> convertToDto(List<ActualOrder> actualOrders) {
+    private Collection<ActualOrderDao> convertToDto(Collection<ActualOrder> actualOrders) {
         return actualOrders.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
@@ -73,10 +72,10 @@ public class OrderService implements IOrderService {
     }
 
     public ActualOrderDao cancelOrder(Long orderId, Long retrieverUserId) {
-        ActualOrder actualOrder = actualOrderRepository.getById(orderId);
+        ActualOrder actualOrder = orderRepository.getById(orderId);
         if (actualOrder.getOrder().getClient().getUserId().equals(retrieverUserId)) {
             if (isOrderCancellable(actualOrder)) {
-                return convertToDto(actualOrderRepository.cancelOrder(actualOrder));
+                return convertToDto(orderRepository.cancelOrder(actualOrder));
             } else {
                 return convertToDto(actualOrder);
             }
@@ -86,20 +85,20 @@ public class OrderService implements IOrderService {
     }
 
     public ActualOrderDao completeOrder(Long orderId, Long driverId) {
-        ActualOrder actualOrder = actualOrderRepository.getById(orderId);
+        ActualOrder actualOrder = orderRepository.getById(orderId);
         if (actualOrder.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
                 && driverId.equals(actualOrder.getDriver().getUserId())) {
-            return convertToDto(actualOrderRepository.completeOrder(actualOrder));
+            return convertToDto(orderRepository.completeOrder(actualOrder));
         } else {
             throw new TaxiServiceException(3);
         }
     }
 
     public ActualOrderDao refuseOrder(Long id, Long driverId) {
-        ActualOrder actualOrder = actualOrderRepository.getById(id);
+        ActualOrder actualOrder = orderRepository.getById(id);
         if (actualOrder.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
                 && driverId.equals(actualOrder.getDriver().getUserId())) {
-            return convertToDto(actualOrderRepository.refuseOrder(actualOrder));
+            return convertToDto(orderRepository.refuseOrder(actualOrder));
         } else {
             throw new TaxiServiceException(4);
         }
@@ -117,6 +116,6 @@ public class OrderService implements IOrderService {
     }
 
     public Collection<ActualOrderDao> getActualUserOrders(Long retrieverUserId) {
-        return actualOrderRepository.getAllUserOrders(retrieverUserId);
+        return orderRepository.getAllUserOrders(retrieverUserId);
     }
 }
