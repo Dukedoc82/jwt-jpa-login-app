@@ -21,7 +21,8 @@ public class OrderController {
     private IOrderService orderService;
 
     @RequestMapping(value = "new", method = RequestMethod.POST)
-    public OrderDetailsDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token, @RequestBody OrderDao order) {
+    public OrderDetailsDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                       @RequestBody OrderDao order) {
         addUserData(token, order);
         return orderService.createOrder(order, tokenUtil.getUserIdFromToken(token));
     }
