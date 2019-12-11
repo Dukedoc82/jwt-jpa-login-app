@@ -9,7 +9,7 @@ import javax.persistence.*;
 @Entity
 @Immutable
 @Table(name = "current_status_orders_view")
-public class ActualOrder {
+public class OrderDetails {
 
     @Id
     @JsonIgnore

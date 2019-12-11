@@ -1,7 +1,7 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.entity.ActualOrder;
+import com.dyukov.taxi.entity.OrderDetails;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
@@ -40,7 +40,7 @@ public class OrderRepository implements IOrderRepository {
     @NonNull
     public Collection getAll() {
         try {
-            String sql = "Select e from " + ActualOrder.class.getName() + " e";
+            String sql = "Select e from " + OrderDetails.class.getName() + " e";
             Query query = entityManager.createQuery(sql);
             return query.getResultList();
         } catch (NoResultException e) {
@@ -51,7 +51,7 @@ public class OrderRepository implements IOrderRepository {
     @NonNull
     public Collection getAllUserOrders(Long retrieverUserId) {
         try {
-            String sql = "Select e from " + ActualOrder.class.getName() + " e " +
+            String sql = "Select e from " + OrderDetails.class.getName() + " e " +
                     "where e.order.client.userId = :userId";
             Query query = entityManager.createQuery(sql);
             query.setParameter("userId", retrieverUserId);
@@ -62,33 +62,33 @@ public class OrderRepository implements IOrderRepository {
     }
 
     @Nullable
-    public ActualOrder getById(Long id, Long retrieverUserId) {
+    public OrderDetails getById(Long id, Long retrieverUserId) {
         try {
-            String sql = "Select e from " + ActualOrder.class.getName() + " e " +
+            String sql = "Select e from " + OrderDetails.class.getName() + " e " +
                     "where e.order.id = :orderId and (e.order.client.userId = :userId or e.driver.userId = :userId)";
             Query query = entityManager.createQuery(sql);
             query.setParameter("orderId", id);
             query.setParameter("userId", retrieverUserId);
-            return (ActualOrder) query.getSingleResult();
+            return (OrderDetails) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
 
     @Nullable
-    public ActualOrder getById(Long id) {
+    public OrderDetails getById(Long id) {
         try {
-            String sql = "Select e from " + ActualOrder.class.getName() + " e " +
+            String sql = "Select e from " + OrderDetails.class.getName() + " e " +
                     "where e.order.id = :orderId";
             Query query = entityManager.createQuery(sql);
             query.setParameter("orderId", id);
-            return (ActualOrder) query.getSingleResult();
+            return (OrderDetails) query.getSingleResult();
         } catch (NoResultException e) {
             return null;
         }
     }
 
-    public ActualOrder createOrder(TpOrder order, Long retrieverUserId) {
+    public OrderDetails createOrder(TpOrder order, Long retrieverUserId) {
         entityManager.persist(order);
         entityManager.flush();
         OrderHistory orderHistory = updateOrderHistory(order, retrieverUserId, "tp.status.opened");
@@ -105,32 +105,32 @@ public class OrderRepository implements IOrderRepository {
         return orderHistory;
     }
 
-    public ActualOrder assignOrderToDriver(Long orderId, Long driverId, Long retrieverId) {
-        ActualOrder actualOrder = getById(orderId);
-        actualOrder.setDriver(userDetailsRepository.findUserAccount(driverId));
-        actualOrder.setStatus(orderStatusRepository.getStatusByKey(OrderStatuses.ASSIGNED));
-        entityManager.persist(actualOrder);
+    public OrderDetails assignOrderToDriver(Long orderId, Long driverId, Long retrieverId) {
+        OrderDetails orderDetails = getById(orderId);
+        orderDetails.setDriver(userDetailsRepository.findUserAccount(driverId));
+        orderDetails.setStatus(orderStatusRepository.getStatusByKey(OrderStatuses.ASSIGNED));
+        entityManager.persist(orderDetails);
         entityManager.flush();
-        return actualOrder;
+        return orderDetails;
     }
 
-    public ActualOrder cancelOrder(ActualOrder actualOrder) {
-        return updateOrderStatus(actualOrder, OrderStatuses.CANCELED);
+    public OrderDetails cancelOrder(OrderDetails orderDetails) {
+        return updateOrderStatus(orderDetails, OrderStatuses.CANCELED);
     }
 
-    public ActualOrder completeOrder(ActualOrder actualOrder) {
-        return updateOrderStatus(actualOrder, OrderStatuses.COMPLETED);
+    public OrderDetails completeOrder(OrderDetails orderDetails) {
+        return updateOrderStatus(orderDetails, OrderStatuses.COMPLETED);
     }
 
-    public ActualOrder refuseOrder(ActualOrder actualOrder) {
-        actualOrder.setDriver(null);
-        return updateOrderStatus(actualOrder, OrderStatuses.OPENED);
+    public OrderDetails refuseOrder(OrderDetails orderDetails) {
+        orderDetails.setDriver(null);
+        return updateOrderStatus(orderDetails, OrderStatuses.OPENED);
     }
 
-    private ActualOrder updateOrderStatus(ActualOrder actualOrder, String newStatus) {
-        actualOrder.setStatus(orderStatusRepository.getStatusByKey(newStatus));
-        entityManager.persist(actualOrder);
+    private OrderDetails updateOrderStatus(OrderDetails orderDetails, String newStatus) {
+        orderDetails.setStatus(orderStatusRepository.getStatusByKey(newStatus));
+        entityManager.persist(orderDetails);
         entityManager.flush();
-        return actualOrder;
+        return orderDetails;
     }
 }

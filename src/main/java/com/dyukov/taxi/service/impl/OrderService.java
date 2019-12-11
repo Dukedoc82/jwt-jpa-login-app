@@ -1,9 +1,9 @@
 package com.dyukov.taxi.service.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.dao.ActualOrderDao;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
-import com.dyukov.taxi.entity.ActualOrder;
+import com.dyukov.taxi.entity.OrderDetails;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.repository.IOrderRepository;
@@ -28,41 +28,41 @@ public class OrderService implements IOrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public ActualOrderDao createOrder(OrderDao orderDao, Long updatedBy) {
+    public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
         return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), updatedBy));
     }
 
-    public ActualOrderDao getOrderById(Long id, Long retrieverUserId) {
+    public OrderDetailsDao getOrderById(Long id, Long retrieverUserId) {
         return convertToDto(orderRepository.getById(id, retrieverUserId));
     }
 
-    public ActualOrderDao getOrderById(Long id) {
+    public OrderDetailsDao getOrderById(Long id) {
         return convertToDto(orderRepository.getById(id));
     }
 
-    public Collection<ActualOrderDao> getActualOrders() {
+    public Collection<OrderDetailsDao> getActualOrders() {
         return convertToDto(orderRepository.getAll());
     }
 
-    public ActualOrderDao assignOrderToDriver(ActualOrderDao orderDao, Long driverId, Long updatedBy) {
-        ActualOrder actualOrder = orderRepository.getById(orderDao.getOrder().getId());
-        if (actualOrder != null) {
-            if (isOrderAssignable(actualOrder, driverId)) {
-                return convertToDto(orderRepository.assignOrderToDriver(actualOrder.getOrder().getId(),
+    public OrderDetailsDao assignOrderToDriver(OrderDetailsDao orderDao, Long driverId, Long updatedBy) {
+        OrderDetails orderDetails = orderRepository.getById(orderDao.getOrder().getId());
+        if (orderDetails != null) {
+            if (isOrderAssignable(orderDetails, driverId)) {
+                return convertToDto(orderRepository.assignOrderToDriver(orderDetails.getOrder().getId(),
                         driverId, updatedBy));
             }
-            return convertToDto(actualOrder);
+            return convertToDto(orderDetails);
         } else {
             throw new TaxiServiceException(1);
         }
     }
 
-    private Collection<ActualOrderDao> convertToDto(Collection<ActualOrder> actualOrders) {
-        return actualOrders.stream().map(this::convertToDto).collect(Collectors.toList());
+    private Collection<OrderDetailsDao> convertToDto(Collection<OrderDetails> orderDetails) {
+        return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    private ActualOrderDao convertToDto(ActualOrder actualOrder) {
-        return actualOrder == null ? null : modelMapper.map(actualOrder, ActualOrderDao.class);
+    private OrderDetailsDao convertToDto(OrderDetails orderDetails) {
+        return orderDetails == null ? null : modelMapper.map(orderDetails, OrderDetailsDao.class);
     }
 
     private TpOrder convertFromDto(OrderDao orderDao) {
@@ -71,51 +71,51 @@ public class OrderService implements IOrderService {
         return order;
     }
 
-    public ActualOrderDao cancelOrder(Long orderId, Long retrieverUserId) {
-        ActualOrder actualOrder = orderRepository.getById(orderId);
-        if (actualOrder.getOrder().getClient().getUserId().equals(retrieverUserId)) {
-            if (isOrderCancellable(actualOrder)) {
-                return convertToDto(orderRepository.cancelOrder(actualOrder));
+    public OrderDetailsDao cancelOrder(Long orderId, Long retrieverUserId) {
+        OrderDetails orderDetails = orderRepository.getById(orderId);
+        if (orderDetails.getOrder().getClient().getUserId().equals(retrieverUserId)) {
+            if (isOrderCancellable(orderDetails)) {
+                return convertToDto(orderRepository.cancelOrder(orderDetails));
             } else {
-                return convertToDto(actualOrder);
+                return convertToDto(orderDetails);
             }
         } else {
             throw new TaxiServiceException(2);
         }
     }
 
-    public ActualOrderDao completeOrder(Long orderId, Long driverId) {
-        ActualOrder actualOrder = orderRepository.getById(orderId);
-        if (actualOrder.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
-                && driverId.equals(actualOrder.getDriver().getUserId())) {
-            return convertToDto(orderRepository.completeOrder(actualOrder));
+    public OrderDetailsDao completeOrder(Long orderId, Long driverId) {
+        OrderDetails orderDetails = orderRepository.getById(orderId);
+        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
+                && driverId.equals(orderDetails.getDriver().getUserId())) {
+            return convertToDto(orderRepository.completeOrder(orderDetails));
         } else {
             throw new TaxiServiceException(3);
         }
     }
 
-    public ActualOrderDao refuseOrder(Long id, Long driverId) {
-        ActualOrder actualOrder = orderRepository.getById(id);
-        if (actualOrder.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
-                && driverId.equals(actualOrder.getDriver().getUserId())) {
-            return convertToDto(orderRepository.refuseOrder(actualOrder));
+    public OrderDetailsDao refuseOrder(Long id, Long driverId) {
+        OrderDetails orderDetails = orderRepository.getById(id);
+        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
+                && driverId.equals(orderDetails.getDriver().getUserId())) {
+            return convertToDto(orderRepository.refuseOrder(orderDetails));
         } else {
             throw new TaxiServiceException(4);
         }
     }
 
-    private boolean isOrderCancellable(ActualOrder actualOrder) {
-        String status = actualOrder.getStatus().getTitleKey();
+    private boolean isOrderCancellable(OrderDetails orderDetails) {
+        String status = orderDetails.getStatus().getTitleKey();
         return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED);
     }
 
-    private boolean isOrderAssignable(ActualOrder actualOrder, Long driverId) {
-        String status = actualOrder.getStatus().getTitleKey();
+    private boolean isOrderAssignable(OrderDetails orderDetails, Long driverId) {
+        String status = orderDetails.getStatus().getTitleKey();
         return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED) &&
-                !(status.equals(OrderStatuses.ASSIGNED) && actualOrder.getDriver().getUserId().equals(driverId));
+                !(status.equals(OrderStatuses.ASSIGNED) && orderDetails.getDriver().getUserId().equals(driverId));
     }
 
-    public Collection<ActualOrderDao> getActualUserOrders(Long retrieverUserId) {
+    public Collection<OrderDetailsDao> getActualUserOrders(Long retrieverUserId) {
         return orderRepository.getAllUserOrders(retrieverUserId);
     }
 }

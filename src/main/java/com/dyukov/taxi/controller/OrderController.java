@@ -1,7 +1,7 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
-import com.dyukov.taxi.dao.ActualOrderDao;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.IOrderService;
@@ -21,27 +21,27 @@ public class OrderController {
     private IOrderService orderService;
 
     @RequestMapping(value = "new", method = RequestMethod.POST)
-    public ActualOrderDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token, @RequestBody OrderDao order) {
+    public OrderDetailsDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token, @RequestBody OrderDao order) {
         addUserData(token, order);
         return orderService.createOrder(order, tokenUtil.getUserIdFromToken(token));
     }
 
     @RequestMapping(value = "/{id}")
-    public ActualOrderDao getOrderById(@CookieValue(value = "userToken", defaultValue = "") String token,
-                                       @PathVariable("id") Long orderId) {
+    public OrderDetailsDao getOrderById(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                        @PathVariable("id") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getOrderById(orderId, retrieverUserId);
     }
 
     @RequestMapping(value = "/cancel", method = RequestMethod.POST)
-    public ActualOrderDao cancelOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
-                                      @RequestBody ActualOrderDao orderDao) {
+    public OrderDetailsDao cancelOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                       @RequestBody OrderDetailsDao orderDao) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.cancelOrder(orderDao.getOrder().getId(), retrieverUserId);
     }
 
     @RequestMapping(value = "/orders", method = RequestMethod.GET)
-    public Collection<ActualOrderDao> getUserOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+    public Collection<OrderDetailsDao> getUserOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getActualUserOrders(retrieverUserId);
     }

@@ -2,7 +2,7 @@ package com.dyukov.taxi.dao;
 
 import com.dyukov.taxi.entity.TpOrderStatus;
 
-public class ActualOrderDao {
+public class OrderDetailsDao {
 
     private OrderDao order;
 
