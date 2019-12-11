@@ -23,7 +23,7 @@ import java.util.Date;
 
 @Repository
 @Transactional
-public class ActualOrderRepository implements IOrderRepository {
+public class OrderRepository implements IOrderRepository {
 
     @Autowired
     private EntityManager entityManager;
