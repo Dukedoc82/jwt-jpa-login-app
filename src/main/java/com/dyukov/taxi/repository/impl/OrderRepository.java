@@ -1,9 +1,12 @@
-package com.dyukov.taxi.repository;
+package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.ActualOrder;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.repository.IOrderHistoryRepository;
+import com.dyukov.taxi.repository.IOrderStatusRepository;
+import com.dyukov.taxi.repository.IUserDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
@@ -22,16 +25,16 @@ public class OrderRepository {
     private EntityManager entityManager;
 
     @Autowired
-    private OrderHistoryRepository orderHistoryRepository;
+    private IOrderHistoryRepository orderHistoryRepository;
 
     @Autowired
-    private OrderStatusRepository orderStatusRepository;
+    private IOrderStatusRepository orderStatusRepository;
 
     @Autowired
     private ActualOrderRepository actualOrderRepository;
 
     @Autowired
-    private UserDetailsRepository userDetailsRepository;
+    private IUserDetailsRepository userDetailsRepository;
 
     public ActualOrder createOrder(TpOrder order, Long retrieverUserId) {
         entityManager.persist(order);
@@ -93,4 +96,5 @@ public class OrderRepository {
         orderHistory.setUpdatedBy(userDetailsRepository.findUserAccount(retrieverUserId));
         return orderHistory;
     }
+
 }

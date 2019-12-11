@@ -4,7 +4,7 @@ import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.ActualOrderDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.dao.UserDao;
-import com.dyukov.taxi.service.OrderService;
+import com.dyukov.taxi.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,7 +18,7 @@ public class OrderController {
     private JwtTokenUtil tokenUtil;
 
     @Autowired
-    private OrderService orderService;
+    private IOrderService orderService;
 
     @RequestMapping(value = "new", method = RequestMethod.POST)
     public ActualOrderDao createOrder(@CookieValue(value = "userToken", defaultValue = "") String token, @RequestBody OrderDao order) {
@@ -33,7 +33,7 @@ public class OrderController {
         return orderService.getOrderById(orderId, retrieverUserId);
     }
 
-    @RequestMapping(value = "/cancel/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/cancel", method = RequestMethod.POST)
     public ActualOrderDao cancelOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
                                       @RequestBody ActualOrderDao orderDao) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);

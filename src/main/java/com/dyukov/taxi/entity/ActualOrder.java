@@ -1,5 +1,6 @@
 package com.dyukov.taxi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.annotation.Immutable;
 import org.springframework.lang.NonNull;
 
