@@ -1,12 +1,15 @@
 package com.dyukov.taxi.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
-@Table(name = "App_Role", //
+@Table(name = "Tp_Role", //
         uniqueConstraints = { //
-                @UniqueConstraint(name = "APP_ROLE_UK", columnNames = "Role_Name") })
-public class AppRole {
+                @UniqueConstraint(name = "Tp_ROLE_UK", columnNames = "Role_Name") })
+public class TpRole implements Serializable {
+
+    private static final long serialVersionUID = 5777871383733820000L;
 
     @Id
     @GeneratedValue
@@ -32,4 +35,11 @@ public class AppRole {
         this.roleName = roleName;
     }
 
+    @Override
+    public String toString() {
+        return "TpRole{" +
+                "roleId=" + roleId +
+                ", roleName='" + roleName + '\'' +
+                '}';
+    }
 }

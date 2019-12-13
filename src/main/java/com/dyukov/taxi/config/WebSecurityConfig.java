@@ -2,6 +2,8 @@ package com.dyukov.taxi.config;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -49,27 +51,42 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         return super.authenticationManagerBean();
     }
 
-    @Bean
-    public ModelMapper modelMapper() {
-        return new ModelMapper();
-    }
-
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         // We don't need CSRF for this example
         httpSecurity.csrf().disable()
                 // dont authenticate this particular request
                 .authorizeRequests().antMatchers("/authenticate", "/register", "/registerAsADriver").permitAll().
-                // all other requests need to be authenticated
-                        //anyRequest().authenticated().
-                antMatchers("/hello").hasAnyAuthority("ROLE_ADMIN", "ROLE_USER").
-                antMatchers("/new").hasAuthority("ROLE_ADMIN").
+                antMatchers("/new", "/admin/**").
+                        hasAuthority("ROLE_ADMIN").
+                antMatchers("/driver/**").
+                        hasAnyAuthority("ROLE_ADMIN", "ROLE_DRIVER").
+                antMatchers("/hello", "/order/**").
+                        hasAnyAuthority("ROLE_ADMIN", "ROLE_USER", "ROLE_DRIVER").
+                anyRequest().authenticated().
+                and().
+                    formLogin().loginPage("/login.html").permitAll().
+                and().
+                    logout()
+                    .logoutUrl("/logout")
+                    .deleteCookies("userToken")
+                    .invalidateHttpSession(true).permitAll().
+                /*and().
+                    sessionManagement()
+                        .maximumSessions(1).
+                and()
+                    .invalidSessionUrl("/login.html").
+                sessionAuthenticationErrorUrl("/login.html").*/
                 and().
 
                 // make sure we use stateless session; session won't be used to
                 // store user's state.
-                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                        exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        //.accessDeniedPage("/login.html")
+
+                .and().
+                    sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
     }

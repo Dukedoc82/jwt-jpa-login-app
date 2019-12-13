@@ -1,25 +1,28 @@
 package com.dyukov.taxi.entity;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
-@Table(name = "User_Role", //
-        uniqueConstraints = { //
+@Table(name = "User_Role",
+        uniqueConstraints = {
                 @UniqueConstraint(name = "USER_ROLE_UK", columnNames = { "User_Id", "Role_Id" }) })
-public class UserRole {
+public class UserRole implements Serializable {
+
+    private static final long serialVersionUID = -6778863180063349822L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "Id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "User_Id", nullable = false)
-    private AppUser appUser;
+    private TpUser tpUser;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Role_Id", nullable = false)
-    private AppRole appRole;
+    private TpRole tpRole;
 
     public Long getId() {
         return id;
@@ -29,20 +32,28 @@ public class UserRole {
         this.id = id;
     }
 
-    public AppUser getAppUser() {
-        return appUser;
+    public TpUser getTpUser() {
+        return tpUser;
     }
 
-    public void setAppUser(AppUser appUser) {
-        this.appUser = appUser;
+    public void setTpUser(TpUser tpUser) {
+        this.tpUser = tpUser;
     }
 
-    public AppRole getAppRole() {
-        return appRole;
+    public TpRole getTpRole() {
+        return tpRole;
     }
 
-    public void setAppRole(AppRole appRole) {
-        this.appRole = appRole;
+    public void setTpRole(TpRole tpRole) {
+        this.tpRole = tpRole;
     }
 
+    @Override
+    public String toString() {
+        return "UserRole{" +
+                "id=" + id +
+                ", tpUser=" + tpUser +
+                ", tpRole=" + tpRole +
+                '}';
+    }
 }

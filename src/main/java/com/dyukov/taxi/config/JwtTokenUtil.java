@@ -1,10 +1,9 @@
 package com.dyukov.taxi.config;
 
-import com.dyukov.taxi.repository.ExpiredTokensRepository;
+import com.dyukov.taxi.model.TpUserDetails;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -18,9 +17,6 @@ import java.util.function.Function;
 @Component
 public class JwtTokenUtil implements Serializable {
 
-    @Autowired
-    private ExpiredTokensRepository expiredTokensRepository;
-
     private static final long serialVersionUID = -2550185165626007488L;
     public static final long JWT_TOKEN_VALIDITY = 5 * 60 * 60;
     @Value("${jwt.secret}")
@@ -28,6 +24,11 @@ public class JwtTokenUtil implements Serializable {
     //retrieve username from jwt token
     public String getUsernameFromToken(String token) {
         return getClaimFromToken(token, Claims::getSubject);
+    }
+
+    public Long getUserIdFromToken(String token) {
+        final Claims claims = getAllClaimsFromToken(token);
+        return claims.get("userId", Long.class);
     }
     //retrieve expiration date from jwt token
     public Date getExpirationDateFromToken(String token) {
@@ -44,11 +45,12 @@ public class JwtTokenUtil implements Serializable {
     //check if the token has expired
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date()) || expiredTokensRepository.getExpiredToken(token) != null;
+        return expiration.before(new Date());
     }
     //generate token for user
-    public String generateToken(UserDetails userDetails) {
+    public String generateToken(TpUserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userDetails.getUser().getUserId());
         return doGenerateToken(claims, userDetails.getUsername());
     }
     //while creating the token -

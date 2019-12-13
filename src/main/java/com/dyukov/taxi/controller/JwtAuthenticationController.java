@@ -1,21 +1,49 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
+import com.dyukov.taxi.dao.RegistrationData;
+import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.model.JwtRequest;
-import com.dyukov.taxi.model.JwtResponse;
-import com.dyukov.taxi.service.JwtUserDetailsService;
+import com.dyukov.taxi.model.TpUserDetails;
+import com.dyukov.taxi.service.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collection;
 
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
+
+    public class AuthData {
+
+        private String uri;
+
+        private UserDao user;
+
+        AuthData(String uri, UserDao user) {
+            this.uri = uri;
+            this.user = user;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+        public UserDao getUser() {
+            return user;
+        }
+    }
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -24,19 +52,60 @@ public class JwtAuthenticationController {
     private JwtTokenUtil jwtTokenUtil;
 
     @Autowired
-    private JwtUserDetailsService userDetailsService;
+    private IUserDetailsService userDetailsService;
 
-    @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+    @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
+            consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
-        System.out.println("111! before authenticate");
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
-        System.out.println("222! after authenticate");
-        final UserDetails userDetails = userDetailsService
+        final TpUserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
-        System.out.println("333! after user load");
         final String token = jwtTokenUtil.generateToken(userDetails);
-        System.out.println("444! after generateToken");
-        return ResponseEntity.ok(new JwtResponse(token));
+        HttpCookie cookie = ResponseCookie.from("userToken", token)
+                .path("/")
+                .build();
+        String targetUrl = "/";
+        Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
+        for (GrantedAuthority authority : authorities) {
+            switch (authority.getAuthority()) {
+                case "ROLE_ADMIN":
+                    targetUrl = getAdminUrl(targetUrl);
+                    break;
+                case "ROLE_DRIVER":
+                    targetUrl = getDriverUrl(targetUrl);
+                    break;
+                case "ROLE_USER":
+                    targetUrl = getUserUrl(targetUrl);
+                    break;
+            }
+        }
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(new AuthData(targetUrl, userDetails.getUser()));
+    }
+
+    private String getAdminUrl(String targetUrl) {
+        targetUrl = targetUrl + "admin/test.html";
+        return targetUrl;
+    }
+
+    private String getDriverUrl(String targetUrl) {
+        targetUrl = targetUrl + "driver/test.html";
+        return targetUrl;
+    }
+
+    private String getUserUrl(String targetUrl) {
+        targetUrl = targetUrl + "test.html";
+        return targetUrl;
+    }
+
+    @RequestMapping(value = "/register", method = RequestMethod.POST)
+    public UserDao registerUser(@RequestBody RegistrationData registrationData) {
+        return userDetailsService.save(registrationData);
+    }
+
+    @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
+    public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
+        return userDetailsService.saveDriver(registrationData);
     }
 
     private void authenticate(String username, String password) throws Exception {
@@ -48,4 +117,5 @@ public class JwtAuthenticationController {
             throw new Exception("INVALID_CREDENTIALS", e);
         }
     }
+
 }
