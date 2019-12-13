@@ -53,8 +53,6 @@ public class OrderRepository implements IOrderRepository {
                     "where e.order.client.userId = :userId and " +
                     "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
                     "where e.order.id = r.order.id)";
-            /*String sql = "Select e from " + OrderDetails.class.getName() + " e " +
-                    "where e.order.client.userId = :userId";*/
             Query query = entityManager.createQuery(sql);
             query.setParameter("userId", retrieverUserId);
             return query.getResultList();
@@ -157,6 +155,11 @@ public class OrderRepository implements IOrderRepository {
     @Override
     public Collection getCompletedDriverOrders(Long driverId) {
         return getDriverOrdersByStatus(driverId, OrderStatuses.COMPLETED);
+    }
+
+    @Override
+    public Collection getCancelledDriverOrders(Long driverId) {
+        return getDriverOrdersByStatus(driverId, OrderStatuses.CANCELED);
     }
 
     private Collection getDriverOrdersByStatus(Long driverId, String status) {

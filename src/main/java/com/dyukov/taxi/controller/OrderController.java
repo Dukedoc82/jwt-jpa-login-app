@@ -2,7 +2,6 @@ package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.HistoryRec;
-import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.IOrderService;
@@ -43,7 +42,7 @@ public class OrderController {
     }
 
     @RequestMapping(value = "/orders", method = RequestMethod.GET)
-    public Collection<HistoryRec> getUserOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+    public Collection getUserOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getActualUserOrders(retrieverUserId);
     }

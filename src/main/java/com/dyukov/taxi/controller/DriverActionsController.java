@@ -2,7 +2,6 @@ package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.HistoryRec;
-import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -58,6 +57,12 @@ public class DriverActionsController {
     public Collection getCompletedOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
         return orderService.getCompletedDriverOrders(driverId);
+    }
+
+    @RequestMapping(value = "/cancelledOrders", method = RequestMethod.GET)
+    public Collection getCancelledOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+        Long driverId = tokenUtil.getUserIdFromToken(token);
+        return orderService.getCancelledDriverOrders(driverId);
     }
 
 }
