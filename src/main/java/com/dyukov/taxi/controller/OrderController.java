@@ -20,7 +20,7 @@ public class OrderController {
     @Autowired
     private IOrderService orderService;
 
-    @RequestMapping(value = "new", method = RequestMethod.POST)
+    @RequestMapping(value = "/new", method = RequestMethod.POST)
     public HistoryRec createOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
                                   @RequestBody OrderDao order) {
         addUserData(token, order);
@@ -41,7 +41,7 @@ public class OrderController {
         return orderService.cancelOrder(historyRec.getOrder().getId(), retrieverUserId);
     }
 
-    @RequestMapping(value = "/orders", method = RequestMethod.GET)
+    @RequestMapping(value = "/", method = RequestMethod.GET)
     public Collection getUserOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getActualUserOrders(retrieverUserId);

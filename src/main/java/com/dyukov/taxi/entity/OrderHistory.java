@@ -36,20 +36,28 @@ public class OrderHistory implements Serializable {
     @JoinColumn(name = "Updated_By")
     private TpUser updatedBy;
 
-    public OrderHistory() {
+    private OrderHistory() {
         super();
+        updatedOn = new Date();
     }
 
     private OrderHistory(TpOrder order, TpOrderStatus status, TpUser driver) {
+        this();
         this.order = order;
         this.status = status;
         this.driver = driver;
         this.updatedBy = driver;
-        this.updatedOn = new Date();
     }
 
     public OrderHistory(TpOrder order, TpOrderStatus orderStatus, TpUser driver, TpUser updatedBy) {
         this(order, orderStatus, driver);
+        this.updatedBy = updatedBy;
+    }
+
+    public OrderHistory(TpOrder order, TpUser driver, TpUser updatedBy) {
+        this();
+        this.order = order;
+        this.driver = driver;
         this.updatedBy = updatedBy;
     }
 
