@@ -19,7 +19,7 @@ public interface IOrderService {
 
     HistoryRec completeOrder(Long orderId, Long driverId);
 
-    HistoryRec refuseOrder(Long id, Long driverId);
+    HistoryRec refuseOrder(Long id, Long updaterId);
 
     Collection getActualUserOrders(Long retrieverUserId);
 

@@ -37,8 +37,8 @@ public class DriverActionsController {
     @RequestMapping(value = "/refuseOrder", method = RequestMethod.POST)
     public HistoryRec refuseOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
                                        @RequestBody HistoryRec historyRec) {
-        Long driverId = tokenUtil.getUserIdFromToken(token);
-        return orderService.refuseOrder(historyRec.getOrder().getId(), driverId);
+        Long updaterId = tokenUtil.getUserIdFromToken(token);
+        return orderService.refuseOrder(historyRec.getOrder().getId(), updaterId);
     }
 
     @RequestMapping(value = "/myOrders", method = RequestMethod.GET)

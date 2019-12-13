@@ -60,7 +60,8 @@ public class OrderService implements IOrderService {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderCancellation(retriever, orderHistory);
-        return convertToDto(orderRepository.cancelOrder(orderHistory));
+        OrderHistory newRec = new OrderHistory(orderHistory.getOrder(), orderHistory.getDriver(), retriever);
+        return convertToDto(orderRepository.cancelOrder(newRec));
     }
 
     public HistoryRec completeOrder(Long orderId, Long driverId) {
@@ -71,11 +72,12 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.completeOrder(newRecord));
     }
 
-    public HistoryRec refuseOrder(Long id, Long driverId) {
+    public HistoryRec refuseOrder(Long id, Long updaterId) {
         OrderHistory orderDetails = orderRepository.getById(id);
-        TpUser driver = userDetailsRepository.findUserAccount(driverId);
-        validateOrderRefusal(orderDetails, driver);
-        return convertToDto(orderRepository.refuseOrder(orderDetails, driver));
+        TpUser updater = userDetailsRepository.findUserAccount(updaterId);
+        validateOrderRefusal(orderDetails, updater);
+        OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), null, updater);
+        return convertToDto(orderRepository.refuseOrder(newRecord));
     }
 
     public Collection getActualUserOrders(Long userId) {
@@ -167,9 +169,9 @@ public class OrderService implements IOrderService {
         }
     }
 
-    private void validateOrderRefusal(OrderHistory orderHistory, TpUser driver) {
-        if (!orderHistory.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) || driver == null
-                || !orderHistory.getDriver().getUserId().equals(driver.getUserId()))
+    private void validateOrderRefusal(OrderHistory orderHistory, TpUser updater) {
+        if (!orderHistory.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) || updater == null
+                || (!isAdmin(updater) && !orderHistory.getDriver().getUserId().equals(updater.getUserId())))
             throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
                     orderHistory.getOrder().getId()));
     }

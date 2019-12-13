@@ -117,13 +117,8 @@ public class OrderRepository implements IOrderRepository {
         return updateOrderStatus(orderHistory, OrderStatuses.COMPLETED);
     }
 
-    public OrderHistory refuseOrder(OrderHistory orderDetails, TpUser updatedBy) {
-        OrderHistory orderHistory = new OrderHistory(orderDetails.getOrder(),
-                orderStatusRepository.getStatusByKey(OrderStatuses.OPENED),
-                null, updatedBy);
-        entityManager.persist(orderHistory);
-        entityManager.flush();
-        return orderHistory;
+    public OrderHistory refuseOrder(OrderHistory orderDetails) {
+        return updateOrderStatus(orderDetails, OrderStatuses.OPENED);
     }
 
     @Override
