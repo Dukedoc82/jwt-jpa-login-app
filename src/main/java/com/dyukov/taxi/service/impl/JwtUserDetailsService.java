@@ -46,12 +46,13 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }
 
-        Collection<String> roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
+        Collection roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
 
         List<GrantedAuthority> grantList = new ArrayList<>();
         if (roleNames != null) {
-            for (String role : roleNames) {
-                GrantedAuthority authority = new SimpleGrantedAuthority(role);
+            for (Object role : roleNames) {
+                String roleName = (String) role;
+                GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
                 grantList.add(authority);
             }
         }
@@ -78,8 +79,23 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
         return convertToDTO(savedUser);
     }
 
-    public Collection<UserDao> findAll() {
+    public Collection findAll() {
         return convertToDao(userDetailsRepository.findAll());
+    }
+
+    @Override
+    public Collection findDrivers() {
+        return convertToDao(userDetailsRepository.findDrivers());
+    }
+
+    @Override
+    public Collection findAdmins() {
+        return convertToDao(userDetailsRepository.findAdmins());
+    }
+
+    @Override
+    public Collection findUsers() {
+        return convertToDao(userDetailsRepository.findUsers());
     }
 
     private UserDao convertToDTO(TpUser tpUser) {

@@ -1,6 +1,7 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.entity.UserRole;
 import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
@@ -89,5 +90,33 @@ public class UserDetailsRepository implements IUserDetailsRepository {
         userRoleRepository.saveDriverRole(tpUser);
         entityManager.flush();
         return tpUser;
+    }
+
+    @Override
+    public Collection findDrivers() {
+        return findUsersByRole("ROLE_DRIVER");
+    }
+
+    @Override
+    public Collection findAdmins() {
+        return findUsersByRole("ROLE_ADMiN");
+    }
+
+    @Override
+    public Collection findUsers() {
+        return findUsersByRole("ROLE_USER");
+    }
+
+    private Collection findUsersByRole(String roleName) {
+        try {
+            String sql = "Select e from " + TpUser.class.getName() + " e, "  + UserRole.class.getName() + " r " +
+                    "where e.userId = r.tpUser.userId " +
+                    "and r.tpRole.roleName = :roleName";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("roleName", roleName);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
     }
 }

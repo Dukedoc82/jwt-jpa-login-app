@@ -1,7 +1,6 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
-import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.IOrderService;
 import com.dyukov.taxi.service.IUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,8 +30,23 @@ public class AdminController {
     }
 
     @RequestMapping("/user")
-    public Collection<UserDao> getAllUsers() {
+    public Collection getAllUsers() {
         return userDetailsService.findAll();
+    }
+
+    @RequestMapping("/driver")
+    public Collection getDrivers() {
+        return userDetailsService.findDrivers();
+    }
+
+    @RequestMapping("/admin")
+    public Collection getAdmins() {
+        return userDetailsService.findAdmins();
+    }
+
+    @RequestMapping("/simpleUser")
+    public Collection getUsers() {
+        return userDetailsService.findUsers();
     }
 
     @RequestMapping("/user/{userId}/order")
