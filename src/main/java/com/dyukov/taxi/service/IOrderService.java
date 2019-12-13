@@ -34,4 +34,6 @@ public interface IOrderService {
     Collection getCancelledDriverOrders(Long driverId);
 
     Collection getOpenedUserOrders(Long userId);
+
+    Collection getAssignedUserOrders(Long userId);
 }

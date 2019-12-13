@@ -74,6 +74,12 @@ public class OrderController {
         return orderService.getOpenedUserOrders(retrieverUserId);
     }
 
+    @RequestMapping(value = "/assigned")
+    public Collection getUserAssignedOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+        Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
+        return orderService.getAssignedUserOrders(retrieverUserId);
+    }
+
     private void addUserData(String token, OrderDao order) {
         UserDao client = new UserDao();
         client.setUserId(tokenUtil.getUserIdFromToken(token));
