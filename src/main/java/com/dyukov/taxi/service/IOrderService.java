@@ -27,4 +27,6 @@ public interface IOrderService {
     HistoryRec refuseOrder(Long id, Long driverId);
 
     Collection<HistoryRec> getActualUserOrders(Long retrieverUserId);
+
+    Collection getDriverOrders(Long driverId);
 }

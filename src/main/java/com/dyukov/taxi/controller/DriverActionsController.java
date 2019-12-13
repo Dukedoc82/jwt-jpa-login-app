@@ -7,6 +7,8 @@ import com.dyukov.taxi.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
+
 @RestController
 @RequestMapping("/driver")
 public class DriverActionsController {
@@ -38,6 +40,12 @@ public class DriverActionsController {
                                        @RequestBody HistoryRec historyRec) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
         return orderService.refuseOrder(historyRec.getOrder().getId(), driverId);
+    }
+
+    @RequestMapping(value = "/myOrders", method = RequestMethod.GET)
+    public Collection getDriverOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+        Long driverId = tokenUtil.getUserIdFromToken(token);
+        return orderService.getDriverOrders(driverId);
     }
 
 }

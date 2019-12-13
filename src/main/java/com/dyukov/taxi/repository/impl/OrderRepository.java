@@ -134,6 +134,22 @@ public class OrderRepository implements IOrderRepository {
         return orderHistory;
     }
 
+    @Override
+    public Collection getDriverOrders(Long driverId) {
+        try {
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.driver.userId = :driverId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.driver.userId = e.driver.userId " +
+                    "and e.order.id = r.order.id)";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("driverId", driverId);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
+    }
+
     private OrderHistory updateOrderStatus(OrderHistory orderDetails, String newStatus) {
         orderDetails.setOrderStatus(orderStatusRepository.getStatusByKey(newStatus));
         entityManager.persist(orderDetails);
