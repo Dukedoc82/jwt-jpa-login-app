@@ -62,7 +62,7 @@ public class OrderRepository implements IOrderRepository {
     }
 
     @Nullable
-    public OrderHistory getById(Long id, Long retrieverUserId, boolean isDriver) {
+    public OrderHistory getById(Long id, Long retrieverUserId) {
         try {
             String sql = "Select e from " + OrderHistory.class.getName() + " e " +
                     "where e.order.id = :orderId " +
@@ -71,12 +71,7 @@ public class OrderRepository implements IOrderRepository {
             Query query = entityManager.createQuery(sql);
             query.setParameter("orderId", id);
             query.setMaxResults(1);
-            OrderHistory result = (OrderHistory) query.getSingleResult();
-            if (isDriver || retrieverUserId.equals(result.getOrder().getClient().getUserId())) {
-                return result;
-            } else {
-                throw new OrderNotFoundException(id);
-            }
+            return (OrderHistory) query.getSingleResult();
         } catch (NoResultException e) {
             throw new OrderNotFoundException(id, e);
         }

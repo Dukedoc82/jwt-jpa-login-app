@@ -12,7 +12,7 @@ public interface IOrderRepository {
 
     Collection getAllUserOrders(Long retrieverUserId);
 
-    OrderHistory getById(Long id, Long retrieverUserId, boolean isDriver);
+    OrderHistory getById(Long id, Long retrieverUserId);
 
     OrderHistory getById(Long id);
 

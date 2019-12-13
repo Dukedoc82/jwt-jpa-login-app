@@ -16,6 +16,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
@@ -38,11 +39,9 @@ public class OrderService implements IOrderService {
 
     public HistoryRec getOrderById(Long id, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
-        return convertToDto(orderRepository.getById(id, retrieverUserId, isDriver(retriever)));
-    }
-
-    public HistoryRec getOrderById(Long id) {
-        return convertToDto(orderRepository.getById(id));
+            OrderHistory order = orderRepository.getById(id, retrieverUserId);
+            validateOrder(order, retriever);
+            return convertToDto(orderRepository.getById(id, retrieverUserId));
     }
 
     public Collection getActualOrders() {
@@ -65,15 +64,11 @@ public class OrderService implements IOrderService {
     }
 
     public HistoryRec completeOrder(Long orderId, Long driverId) {
-        TpUser driver = userDetailsRepository.findUserAccount(driverId);
-        OrderHistory orderDetails = orderRepository.getById(orderId, driverId, isDriver(driver));
+        OrderHistory orderDetails = orderRepository.getById(orderId, driverId);
         validateOrderCompletion(orderDetails, driverId);
-        return convertToDto(orderRepository.completeOrder(orderDetails));
-    }
-
-    public HistoryRec completeOrderAsAdmin(Long orderId) {
-        OrderHistory history = orderRepository.getById(orderId);
-        return convertToDto(history);
+        OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), orderDetails.getDriver(),
+                userDetailsRepository.findUserAccount(driverId));
+        return convertToDto(orderRepository.completeOrder(newRecord));
     }
 
     public HistoryRec refuseOrder(Long id, Long driverId) {
@@ -83,8 +78,16 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.refuseOrder(orderDetails, driver));
     }
 
-    public Collection getActualUserOrders(Long retrieverUserId) {
-        return orderRepository.getAllUserOrders(retrieverUserId);
+    public Collection getActualUserOrders(Long userId) {
+        return getActualUserOrders(userId, null);
+    }
+
+    public Collection getActualUserOrders(Long userId, Long retrieverId) {
+        if (retrieverId == null || isAdmin(userDetailsRepository.findUserAccount(retrieverId))) {
+            return orderRepository.getAllUserOrders(userId);
+        } else {
+            return new ArrayList();
+        }
     }
 
     @Override
@@ -152,9 +155,16 @@ public class OrderService implements IOrderService {
                 || orderDetails.getStatus().getTitleKey().equals(OrderStatuses.CANCELED))
             throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED,
                     orderDetails.getOrder().getId()));
-        if (orderDetails.getDriver() == null || !orderDetails.getDriver().getUserId().equals(driverId))
+        if (orderDetails.getDriver() == null)
             throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
                     orderDetails.getOrder().getId()));
+        if (!orderDetails.getDriver().getUserId().equals(driverId)) {
+            TpUser user = userDetailsRepository.findUserAccount(driverId);
+            if (!isAdmin(user)) {
+                throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
+                        orderDetails.getOrder().getId()));
+            }
+        }
     }
 
     private void validateOrderRefusal(OrderHistory orderHistory, TpUser driver) {
@@ -162,6 +172,19 @@ public class OrderService implements IOrderService {
                 || !orderHistory.getDriver().getUserId().equals(driver.getUserId()))
             throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
                     orderHistory.getOrder().getId()));
+    }
+
+    private void validateOrder(OrderHistory order, TpUser retriever) {
+        if (!order.getOrder().getClient().getUserId().equals(retriever.getUserId()) &&
+                !isAdmin(retriever) &&
+                !isAllowedDriver(order, retriever))
+            throw new OrderNotFoundException(String.format(TaxiServiceException.ORDER_DOES_NOT_EXIST,
+                    order.getOrder().getId()));
+    }
+
+    private boolean isAllowedDriver(OrderHistory order, TpUser retriever) {
+        return isDriver(retriever) &&
+                (order.getDriver() == null || order.getDriver().getUserId().equals(retriever.getUserId()));
     }
 
     private boolean isDriver(TpUser user) {
