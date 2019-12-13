@@ -54,4 +54,10 @@ public class DriverActionsController {
         return orderService.getAssignedDriverOrders(driverId);
     }
 
+    @RequestMapping(value = "/completedOrders", method = RequestMethod.GET)
+    public Collection getCompletedOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+        Long driverId = tokenUtil.getUserIdFromToken(token);
+        return orderService.getCompletedDriverOrders(driverId);
+    }
+
 }

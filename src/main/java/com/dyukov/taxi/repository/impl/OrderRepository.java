@@ -1,7 +1,6 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.entity.OrderDetails;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
@@ -9,7 +8,6 @@ import com.dyukov.taxi.exception.OrderNotFoundException;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
-import org.apache.tomcat.jni.OS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -153,16 +151,25 @@ public class OrderRepository implements IOrderRepository {
 
     @Override
     public Collection getAssignedDriverOrders(Long driverId) {
+        return getDriverOrdersByStatus(driverId, OrderStatuses.ASSIGNED);
+    }
+
+    @Override
+    public Collection getCompletedDriverOrders(Long driverId) {
+        return getDriverOrdersByStatus(driverId, OrderStatuses.COMPLETED);
+    }
+
+    private Collection getDriverOrdersByStatus(Long driverId, String status) {
         try {
             String sql = "Select e from " + OrderHistory.class.getName() + " e " +
                     "where e.driver.userId = :driverId and " +
                     "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
                     "where r.driver.userId = e.driver.userId " +
                     "and e.order.id = r.order.id) " +
-                    "and e.status.titleKey = :assignedStatus";
+                    "and e.status.titleKey = :status";
             Query query = entityManager.createQuery(sql);
             query.setParameter("driverId", driverId);
-            query.setParameter("assignedStatus", OrderStatuses.ASSIGNED);
+            query.setParameter("status", status);
             return query.getResultList();
         } catch (NoResultException e) {
             return new ArrayList();

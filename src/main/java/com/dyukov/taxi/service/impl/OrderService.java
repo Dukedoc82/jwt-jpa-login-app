@@ -107,6 +107,11 @@ public class OrderService implements IOrderService {
         return orderRepository.getAssignedDriverOrders(driverId);
     }
 
+    @Override
+    public Collection getCompletedDriverOrders(Long driverId) {
+        return orderRepository.getCompletedDriverOrders(driverId);
+    }
+
     private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }

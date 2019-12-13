@@ -30,4 +30,6 @@ public interface IOrderService {
     Collection getDriverOrders(Long driverId);
 
     Collection getAssignedDriverOrders(Long driverId);
+
+    Collection getCompletedDriverOrders(Long driverId);
 }
