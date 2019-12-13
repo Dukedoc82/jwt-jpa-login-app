@@ -37,4 +37,6 @@ public interface IOrderRepository {
     Collection getOpenedUserOrders(Long userId);
 
     Collection getAssignedUserOrders(Long userId);
+
+    Collection getCancelledUserOrders(Long userId);
 }
