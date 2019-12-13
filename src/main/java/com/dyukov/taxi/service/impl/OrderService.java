@@ -2,9 +2,7 @@ package com.dyukov.taxi.service.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.dao.HistoryRec;
-import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
-import com.dyukov.taxi.entity.OrderDetails;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
@@ -69,12 +67,8 @@ public class OrderService implements IOrderService {
     public HistoryRec completeOrder(Long orderId, Long driverId) {
         TpUser driver = userDetailsRepository.findUserAccount(driverId);
         OrderHistory orderDetails = orderRepository.getById(orderId, driverId, isDriver(driver));
-        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
-                && driverId.equals(orderDetails.getDriver().getUserId())) {
-            return convertToDto(orderRepository.completeOrder(orderDetails));
-        } else {
-            throw new TaxiServiceException(3);
-        }
+        validateOrderCompletion(orderDetails, driverId);
+        return convertToDto(orderRepository.completeOrder(orderDetails));
     }
 
     public HistoryRec completeOrderAsAdmin(Long orderId) {
@@ -85,16 +79,32 @@ public class OrderService implements IOrderService {
     public HistoryRec refuseOrder(Long id, Long driverId) {
         OrderHistory orderDetails = orderRepository.getById(id);
         TpUser driver = userDetailsRepository.findUserAccount(driverId);
-        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) && driver != null
-                && driverId.equals(driver.getUserId())) {
-            return convertToDto(orderRepository.refuseOrder(orderDetails, driver));
-        } else {
-            throw new TaxiServiceException(4);
-        }
+        validateOrderRefusal(orderDetails, driver);
+        return convertToDto(orderRepository.refuseOrder(orderDetails, driver));
     }
 
     public Collection getActualUserOrders(Long retrieverUserId) {
         return orderRepository.getAllUserOrders(retrieverUserId);
+    }
+
+    @Override
+    public Collection getDriverOrders(Long driverId) {
+        return orderRepository.getDriverOrders(driverId);
+    }
+
+    @Override
+    public Collection getAssignedDriverOrders(Long driverId) {
+        return orderRepository.getAssignedDriverOrders(driverId);
+    }
+
+    @Override
+    public Collection getCompletedDriverOrders(Long driverId) {
+        return orderRepository.getCompletedDriverOrders(driverId);
+    }
+
+    @Override
+    public Collection getCancelledDriverOrders(Long driverId) {
+        return orderRepository.getCancelledDriverOrders(driverId);
     }
 
     private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
@@ -103,10 +113,6 @@ public class OrderService implements IOrderService {
 
     private HistoryRec convertToDto(OrderHistory orderHistory) {
         return modelMapper.map(orderHistory, HistoryRec.class);
-    }
-
-    private OrderDetailsDao convertToDto(OrderDetails orderDetails) {
-        return orderDetails == null ? null : modelMapper.map(orderDetails, OrderDetailsDao.class);
     }
 
     private TpOrder convertFromDto(OrderDao orderDao) {
@@ -138,12 +144,24 @@ public class OrderService implements IOrderService {
                     orderHistory.getOrder().getId()));
     }
 
-    private void validateOrderCompletion(OrderDetails orderDetails) {
+    private void validateOrderCompletion(OrderHistory orderDetails, Long driverId) {
         if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.COMPLETED))
             throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_ALREADY_COMPLETED,
                     orderDetails.getOrder().getId()));
+        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.OPENED)
+                || orderDetails.getStatus().getTitleKey().equals(OrderStatuses.CANCELED))
+            throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED,
+                    orderDetails.getOrder().getId()));
+        if (orderDetails.getDriver() == null || !orderDetails.getDriver().getUserId().equals(driverId))
+            throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
+                    orderDetails.getOrder().getId()));
+    }
 
-
+    private void validateOrderRefusal(OrderHistory orderHistory, TpUser driver) {
+        if (!orderHistory.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) || driver == null
+                || !orderHistory.getDriver().getUserId().equals(driver.getUserId()))
+            throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
+                    orderHistory.getOrder().getId()));
     }
 
     private boolean isDriver(TpUser user) {

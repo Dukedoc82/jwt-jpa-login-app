@@ -1,7 +1,6 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.entity.OrderDetails;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
@@ -54,8 +53,6 @@ public class OrderRepository implements IOrderRepository {
                     "where e.order.client.userId = :userId and " +
                     "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
                     "where e.order.id = r.order.id)";
-            /*String sql = "Select e from " + OrderDetails.class.getName() + " e " +
-                    "where e.order.client.userId = :userId";*/
             Query query = entityManager.createQuery(sql);
             query.setParameter("userId", retrieverUserId);
             return query.getResultList();
@@ -132,6 +129,54 @@ public class OrderRepository implements IOrderRepository {
         entityManager.persist(orderHistory);
         entityManager.flush();
         return orderHistory;
+    }
+
+    @Override
+    public Collection getDriverOrders(Long driverId) {
+        try {
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.driver.userId = :driverId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.driver.userId = e.driver.userId " +
+                    "and e.order.id = r.order.id)";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("driverId", driverId);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
+    }
+
+    @Override
+    public Collection getAssignedDriverOrders(Long driverId) {
+        return getDriverOrdersByStatus(driverId, OrderStatuses.ASSIGNED);
+    }
+
+    @Override
+    public Collection getCompletedDriverOrders(Long driverId) {
+        return getDriverOrdersByStatus(driverId, OrderStatuses.COMPLETED);
+    }
+
+    @Override
+    public Collection getCancelledDriverOrders(Long driverId) {
+        return getDriverOrdersByStatus(driverId, OrderStatuses.CANCELED);
+    }
+
+    private Collection getDriverOrdersByStatus(Long driverId, String status) {
+        try {
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.driver.userId = :driverId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.driver.userId = e.driver.userId " +
+                    "and e.order.id = r.order.id) " +
+                    "and e.status.titleKey = :status";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("driverId", driverId);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
     }
 
     private OrderHistory updateOrderStatus(OrderHistory orderDetails, String newStatus) {
