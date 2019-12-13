@@ -40,4 +40,6 @@ public interface IOrderService {
     Collection getCancelledUserOrders(Long userId);
 
     Collection getCompletedUserOrders(Long userId);
+
+    Collection getOpenedOrders();
 }

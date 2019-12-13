@@ -136,6 +136,11 @@ public class OrderService implements IOrderService {
         return orderRepository.getCompletedUserOrders(userId);
     }
 
+    @Override
+    public Collection getOpenedOrders() {
+        return orderRepository.getOpenedOrders();
+    }
+
     private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }
