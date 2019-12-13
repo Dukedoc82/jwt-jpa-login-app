@@ -1,11 +1,16 @@
 package com.dyukov.taxi.service.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
+import com.dyukov.taxi.dao.HistoryRec;
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.OrderDetails;
+import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
+import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.exception.OrderNotFoundException;
 import com.dyukov.taxi.exception.TaxiServiceException;
+import com.dyukov.taxi.exception.WrongStatusOrder;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.service.IOrderService;
@@ -28,37 +33,76 @@ public class OrderService implements IOrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
-        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), updatedBy));
+    public HistoryRec createOrder(OrderDao orderDao, Long updatedBy) {
+        TpUser client = userDetailsRepository.findUserAccount(updatedBy);
+        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), client));
     }
 
-    public OrderDetailsDao getOrderById(Long id, Long retrieverUserId) {
-        return convertToDto(orderRepository.getById(id, retrieverUserId));
+    public HistoryRec getOrderById(Long id, Long retrieverUserId) {
+        TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
+        return convertToDto(orderRepository.getById(id, retrieverUserId, isDriver(retriever)));
     }
 
-    public OrderDetailsDao getOrderById(Long id) {
+    public HistoryRec getOrderById(Long id) {
         return convertToDto(orderRepository.getById(id));
     }
 
-    public Collection<OrderDetailsDao> getActualOrders() {
+    public Collection getActualOrders() {
         return convertToDto(orderRepository.getAll());
     }
 
-    public OrderDetailsDao assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
-        OrderDetails orderDetails = orderRepository.getById(orderId);
-        if (orderDetails != null) {
-            if (isOrderAssignable(orderDetails, driverId)) {
-                return convertToDto(orderRepository.assignOrderToDriver(orderDetails.getOrder().getId(),
-                        driverId, updatedBy));
-            }
-            return convertToDto(orderDetails);
+    public HistoryRec assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
+        OrderHistory orderHistory = orderRepository.getById(orderId);
+        validateOrderAssignment(orderHistory, driverId);
+        TpUser driver = userDetailsRepository.findUserAccount(driverId);
+        TpUser updater = userDetailsRepository.findUserAccount(updatedBy);
+        return convertToDto(orderRepository.assignOrderToDriver(orderHistory, driver, updater));
+    }
+
+    public HistoryRec cancelOrder(Long orderId, Long retrieverUserId) {
+        TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
+        OrderHistory orderHistory = orderRepository.getById(orderId);
+        validateOrderCancellation(retriever, orderHistory);
+        return convertToDto(orderRepository.cancelOrder(orderHistory));
+    }
+
+    public HistoryRec completeOrder(Long orderId, Long driverId) {
+        TpUser driver = userDetailsRepository.findUserAccount(driverId);
+        OrderHistory orderDetails = orderRepository.getById(orderId, driverId, isDriver(driver));
+        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
+                && driverId.equals(orderDetails.getDriver().getUserId())) {
+            return convertToDto(orderRepository.completeOrder(orderDetails));
         } else {
-            throw new TaxiServiceException(1);
+            throw new TaxiServiceException(3);
         }
     }
 
-    private Collection<OrderDetailsDao> convertToDto(Collection<OrderDetails> orderDetails) {
+    public HistoryRec completeOrderAsAdmin(Long orderId) {
+        OrderHistory history = orderRepository.getById(orderId);
+        return convertToDto(history);
+    }
+
+    public HistoryRec refuseOrder(Long id, Long driverId) {
+        OrderHistory orderDetails = orderRepository.getById(id);
+        TpUser driver = userDetailsRepository.findUserAccount(driverId);
+        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) && driver != null
+                && driverId.equals(driver.getUserId())) {
+            return convertToDto(orderRepository.refuseOrder(orderDetails, driver));
+        } else {
+            throw new TaxiServiceException(4);
+        }
+    }
+
+    public Collection getActualUserOrders(Long retrieverUserId) {
+        return orderRepository.getAllUserOrders(retrieverUserId);
+    }
+
+    private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
+    }
+
+    private HistoryRec convertToDto(OrderHistory orderHistory) {
+        return modelMapper.map(orderHistory, HistoryRec.class);
     }
 
     private OrderDetailsDao convertToDto(OrderDetails orderDetails) {
@@ -71,51 +115,42 @@ public class OrderService implements IOrderService {
         return order;
     }
 
-    public OrderDetailsDao cancelOrder(Long orderId, Long retrieverUserId) {
-        OrderDetails orderDetails = orderRepository.getById(orderId);
-        if (orderDetails.getOrder().getClient().getUserId().equals(retrieverUserId)) {
-            if (isOrderCancellable(orderDetails)) {
-                return convertToDto(orderRepository.cancelOrder(orderDetails));
-            } else {
-                return convertToDto(orderDetails);
-            }
-        } else {
-            throw new TaxiServiceException(2);
+    private void validateOrderCancellation(TpUser user, OrderHistory orderHistory) {
+        if (!isAdmin(user) && !orderHistory.getOrder().getClient().getUserId().equals(user.getUserId())) {
+            throw new OrderNotFoundException(String.format(TaxiServiceException.ORDER_DOES_NOT_EXIST,
+                    orderHistory.getOrder().getId()));
+        }
+        String status = orderHistory.getStatus().getTitleKey();
+        if (status.equals(OrderStatuses.CANCELED) || status.equals(OrderStatuses.COMPLETED)) {
+            throw new WrongStatusOrder(String.format(TaxiServiceException.WRONG_CANCELLATION_ORDER_STATUS,
+                    orderHistory.getOrder().getId(), status));
         }
     }
 
-    public OrderDetailsDao completeOrder(Long orderId, Long driverId) {
-        OrderDetails orderDetails = orderRepository.getById(orderId);
-        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
-                && driverId.equals(orderDetails.getDriver().getUserId())) {
-            return convertToDto(orderRepository.completeOrder(orderDetails));
-        } else {
-            throw new TaxiServiceException(3);
-        }
+    private void validateOrderAssignment(OrderHistory orderHistory, Long driverId) {
+        String status = orderHistory.getStatus().getTitleKey();
+        if (status.equals(OrderStatuses.CANCELED) || status.equals(OrderStatuses.COMPLETED))
+            throw new WrongStatusOrder(String.format(TaxiServiceException.WRONG_ASSIGNMENT_ORDER_STATUS,
+                    orderHistory.getOrder().getId(), status));
+        TpUser driver = orderHistory.getDriver();
+        if (status.equals(OrderStatuses.ASSIGNED) && driver != null && driver.getUserId().equals(driverId))
+            throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_ALREADY_ASSIGNED,
+                    orderHistory.getOrder().getId()));
     }
 
-    public OrderDetailsDao refuseOrder(Long id, Long driverId) {
-        OrderDetails orderDetails = orderRepository.getById(id);
-        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED)
-                && driverId.equals(orderDetails.getDriver().getUserId())) {
-            return convertToDto(orderRepository.refuseOrder(orderDetails));
-        } else {
-            throw new TaxiServiceException(4);
-        }
+    private void validateOrderCompletion(OrderDetails orderDetails) {
+        if (orderDetails.getStatus().getTitleKey().equals(OrderStatuses.COMPLETED))
+            throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_ALREADY_COMPLETED,
+                    orderDetails.getOrder().getId()));
+
+
     }
 
-    private boolean isOrderCancellable(OrderDetails orderDetails) {
-        String status = orderDetails.getStatus().getTitleKey();
-        return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED);
+    private boolean isDriver(TpUser user) {
+        return user.getRoleNames().contains("ROLE_DRIVER");
     }
 
-    private boolean isOrderAssignable(OrderDetails orderDetails, Long driverId) {
-        String status = orderDetails.getStatus().getTitleKey();
-        return !status.equals(OrderStatuses.CANCELED) && !status.equals(OrderStatuses.COMPLETED) &&
-                !(status.equals(OrderStatuses.ASSIGNED) && orderDetails.getDriver().getUserId().equals(driverId));
-    }
-
-    public Collection<OrderDetailsDao> getActualUserOrders(Long retrieverUserId) {
-        return orderRepository.getAllUserOrders(retrieverUserId);
+    private boolean isAdmin(TpUser user) {
+        return user.getRoleNames().contains("ROLE_ADMIN");
     }
 }

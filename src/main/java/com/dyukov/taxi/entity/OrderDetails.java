@@ -27,6 +27,10 @@ public class OrderDetails {
     @JoinColumn(name = "status_id")
     private TpOrderStatus status;
 
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "hist_id")
+    private OrderHistory historyRec;
+
     public Long getId() {
         return id;
     }
@@ -58,5 +62,24 @@ public class OrderDetails {
 
     public void setStatus(TpOrderStatus status) {
         this.status = status;
+    }
+
+    public OrderHistory getHistoryRec() {
+        return historyRec;
+    }
+
+    public void setHistoryRec(OrderHistory historyRec) {
+        this.historyRec = historyRec;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderDetails{" +
+                "id=" + id +
+                ", order=" + order +
+                ", driver=" + driver +
+                ", status=" + status +
+                ", historyRec=" + historyRec +
+                '}';
     }
 }

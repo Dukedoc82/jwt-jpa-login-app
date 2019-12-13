@@ -1,7 +1,8 @@
 package com.dyukov.taxi.repository;
 
-import com.dyukov.taxi.entity.OrderDetails;
+import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
+import com.dyukov.taxi.entity.TpUser;
 
 import java.util.Collection;
 
@@ -11,17 +12,17 @@ public interface IOrderRepository {
 
     Collection getAllUserOrders(Long retrieverUserId);
 
-    OrderDetails getById(Long id, Long retrieverUserId);
+    OrderHistory getById(Long id, Long retrieverUserId, boolean isDriver);
 
-    OrderDetails getById(Long id);
+    OrderHistory getById(Long id);
 
-    OrderDetails createOrder(TpOrder order, Long retrieverUserId);
+    OrderHistory createOrder(TpOrder order, TpUser updater);
 
-    OrderDetails assignOrderToDriver(Long orderId, Long driverId, Long retrieverId);
+    OrderHistory assignOrderToDriver(OrderHistory order, TpUser driver, TpUser updater);
 
-    OrderDetails cancelOrder(OrderDetails orderDetails);
+    OrderHistory cancelOrder(OrderHistory orderDetails);
 
-    OrderDetails completeOrder(OrderDetails orderDetails);
+    OrderHistory completeOrder(OrderHistory orderDetails);
 
-    OrderDetails refuseOrder(OrderDetails orderDetails);
+    OrderHistory refuseOrder(OrderHistory orderDetails, TpUser updater);
 }

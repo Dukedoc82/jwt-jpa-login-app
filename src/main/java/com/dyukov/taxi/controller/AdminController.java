@@ -1,5 +1,6 @@
 package com.dyukov.taxi.controller;
 
+import com.dyukov.taxi.dao.HistoryRec;
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.service.IOrderService;
@@ -22,12 +23,12 @@ public class AdminController {
     private IUserDetailsService userDetailsService;
 
     @RequestMapping("/actualOrder")
-    public Collection<OrderDetailsDao> getActualOrders() {
+    public Collection<HistoryRec> getActualOrders() {
         return orderService.getActualOrders();
     }
 
     @RequestMapping(value = "/order/{id}")
-    public OrderDetailsDao getOrderById(@PathVariable("id") Long orderId) {
+    public HistoryRec getOrderById(@PathVariable("id") Long orderId) {
         return orderService.getOrderById(orderId);
     }
 

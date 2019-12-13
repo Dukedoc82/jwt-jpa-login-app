@@ -4,10 +4,11 @@ import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.entity.OrderDetails;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
+import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.exception.OrderNotFoundException;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
-import com.dyukov.taxi.repository.IUserDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -19,7 +20,6 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 
 @Repository
 @Transactional
@@ -32,15 +32,14 @@ public class OrderRepository implements IOrderRepository {
     private IOrderStatusRepository orderStatusRepository;
 
     @Autowired
-    private IUserDetailsRepository userDetailsRepository;
-
-    @Autowired
     private IOrderHistoryRepository orderHistoryRepository;
 
     @NonNull
     public Collection getAll() {
         try {
-            String sql = "Select e from " + OrderDetails.class.getName() + " e";
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where e.order.id = r.order.id)";
             Query query = entityManager.createQuery(sql);
             return query.getResultList();
         } catch (NoResultException e) {
@@ -51,8 +50,12 @@ public class OrderRepository implements IOrderRepository {
     @NonNull
     public Collection getAllUserOrders(Long retrieverUserId) {
         try {
-            String sql = "Select e from " + OrderDetails.class.getName() + " e " +
-                    "where e.order.client.userId = :userId";
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.order.client.userId = :userId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where e.order.id = r.order.id)";
+            /*String sql = "Select e from " + OrderDetails.class.getName() + " e " +
+                    "where e.order.client.userId = :userId";*/
             Query query = entityManager.createQuery(sql);
             query.setParameter("userId", retrieverUserId);
             return query.getResultList();
@@ -62,75 +65,80 @@ public class OrderRepository implements IOrderRepository {
     }
 
     @Nullable
-    public OrderDetails getById(Long id, Long retrieverUserId) {
+    public OrderHistory getById(Long id, Long retrieverUserId, boolean isDriver) {
         try {
-            String sql = "Select e from " + OrderDetails.class.getName() + " e " +
-                    "where e.order.id = :orderId and (e.order.client.userId = :userId or e.driver.userId = :userId)";
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.order.id = :orderId " +
+                    "and e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.order.id = :orderId)";
             Query query = entityManager.createQuery(sql);
             query.setParameter("orderId", id);
-            query.setParameter("userId", retrieverUserId);
-            return (OrderDetails) query.getSingleResult();
+            query.setMaxResults(1);
+            OrderHistory result = (OrderHistory) query.getSingleResult();
+            if (isDriver || retrieverUserId.equals(result.getOrder().getClient().getUserId())) {
+                return result;
+            } else {
+                throw new OrderNotFoundException(id);
+            }
         } catch (NoResultException e) {
-            return null;
+            throw new OrderNotFoundException(id, e);
         }
     }
 
     @Nullable
-    public OrderDetails getById(Long id) {
+    public OrderHistory getById(Long id) {
         try {
-            String sql = "Select e from " + OrderDetails.class.getName() + " e " +
-                    "where e.order.id = :orderId";
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.order.id = :orderId " +
+                    "order by e.updatedOn desc";
             Query query = entityManager.createQuery(sql);
             query.setParameter("orderId", id);
-            return (OrderDetails) query.getSingleResult();
+            query.setMaxResults(1);
+            return (OrderHistory) query.getSingleResult();
         } catch (NoResultException e) {
-            return null;
+            throw new OrderNotFoundException(id, e);
         }
     }
 
-    public OrderDetails createOrder(TpOrder order, Long retrieverUserId) {
+    public OrderHistory createOrder(TpOrder order, TpUser updater) {
         entityManager.persist(order);
         entityManager.flush();
-        OrderHistory orderHistory = updateOrderHistory(order, retrieverUserId, "tp.status.opened");
-        orderHistoryRepository.createOrder(orderHistory);
-        return getById(order.getId());
+        OrderHistory orderHistory = new OrderHistory(order,
+                orderStatusRepository.getStatusByKey(OrderStatuses.OPENED),
+                null,
+                updater);
+        return orderHistoryRepository.createOrder(orderHistory);
     }
 
-    private OrderHistory updateOrderHistory(TpOrder order, Long retrieverUserId, String statusKey) {
-        OrderHistory orderHistory = new OrderHistory();
-        orderHistory.setOrder(order);
-        orderHistory.setDate(new Date());
-        orderHistory.setOrderStatus(orderStatusRepository.getStatusByKey(statusKey));
-        orderHistory.setUpdatedBy(userDetailsRepository.findUserAccount(retrieverUserId));
+    public OrderHistory assignOrderToDriver(OrderHistory orderHistory, TpUser driver, TpUser updater) {
+        return orderHistoryRepository.createOrder(new OrderHistory(orderHistory.getOrder(),
+                orderStatusRepository.getStatusByKey(OrderStatuses.ASSIGNED),
+                driver,
+                updater));
+    }
+
+    public OrderHistory cancelOrder(OrderHistory orderHistory) {
+        return updateOrderStatus(orderHistory, OrderStatuses.CANCELED);
+    }
+
+    public OrderHistory completeOrder(OrderHistory orderHistory) {
+        return updateOrderStatus(orderHistory, OrderStatuses.COMPLETED);
+    }
+
+    public OrderHistory refuseOrder(OrderHistory orderDetails, TpUser updatedBy) {
+        OrderHistory orderHistory = new OrderHistory(orderDetails.getOrder(),
+                orderStatusRepository.getStatusByKey(OrderStatuses.OPENED),
+                null, updatedBy);
+        entityManager.persist(orderHistory);
+        entityManager.flush();
         return orderHistory;
     }
 
-    public OrderDetails assignOrderToDriver(Long orderId, Long driverId, Long retrieverId) {
-        OrderDetails orderDetails = getById(orderId);
-        orderDetails.setDriver(userDetailsRepository.findUserAccount(driverId));
-        orderDetails.setStatus(orderStatusRepository.getStatusByKey(OrderStatuses.ASSIGNED));
+    private OrderHistory updateOrderStatus(OrderHistory orderDetails, String newStatus) {
+        orderDetails.setOrderStatus(orderStatusRepository.getStatusByKey(newStatus));
         entityManager.persist(orderDetails);
         entityManager.flush();
         return orderDetails;
     }
 
-    public OrderDetails cancelOrder(OrderDetails orderDetails) {
-        return updateOrderStatus(orderDetails, OrderStatuses.CANCELED);
-    }
-
-    public OrderDetails completeOrder(OrderDetails orderDetails) {
-        return updateOrderStatus(orderDetails, OrderStatuses.COMPLETED);
-    }
-
-    public OrderDetails refuseOrder(OrderDetails orderDetails) {
-        orderDetails.setDriver(null);
-        return updateOrderStatus(orderDetails, OrderStatuses.OPENED);
-    }
-
-    private OrderDetails updateOrderStatus(OrderDetails orderDetails, String newStatus) {
-        orderDetails.setStatus(orderStatusRepository.getStatusByKey(newStatus));
-        entityManager.persist(orderDetails);
-        entityManager.flush();
-        return orderDetails;
-    }
 }

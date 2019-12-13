@@ -33,4 +33,12 @@ public class TpOrderStatus implements Serializable {
     public void setTitleKey(String titleKey) {
         this.titleKey = titleKey;
     }
+
+    @Override
+    public String toString() {
+        return "TpOrderStatus{" +
+                "id=" + id +
+                ", titleKey='" + titleKey + '\'' +
+                '}';
+    }
 }

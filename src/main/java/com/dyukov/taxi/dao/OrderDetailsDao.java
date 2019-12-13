@@ -1,36 +1,15 @@
 package com.dyukov.taxi.dao;
 
-import com.dyukov.taxi.entity.TpOrderStatus;
-
 public class OrderDetailsDao {
 
-    private OrderDao order;
+    private HistoryRec historyRec;
 
-    private UserDao driver;
-
-    private TpOrderStatus status;
-
-    public OrderDao getOrder() {
-        return order;
+    public HistoryRec getHistoryRec() {
+        return historyRec;
     }
 
-    public void setOrder(OrderDao order) {
-        this.order = order;
+    public void setHistoryRec(HistoryRec historyRec) {
+        this.historyRec = historyRec;
     }
 
-    public UserDao getDriver() {
-        return driver;
-    }
-
-    public void setDriver(UserDao driver) {
-        this.driver = driver;
-    }
-
-    public TpOrderStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TpOrderStatus status) {
-        this.status = status;
-    }
 }

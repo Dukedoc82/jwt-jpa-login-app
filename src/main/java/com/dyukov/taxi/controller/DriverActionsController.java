@@ -1,6 +1,7 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
+import com.dyukov.taxi.dao.HistoryRec;
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.service.IOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,25 +18,26 @@ public class DriverActionsController {
     private JwtTokenUtil tokenUtil;
 
     @RequestMapping(value = "/assignOrderToMe", method = RequestMethod.POST)
-    public OrderDetailsDao assignOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
-                                       @RequestBody OrderDetailsDao orderDao) {
+    public HistoryRec assignOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                       @RequestBody HistoryRec historyRec) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
 
-        return orderService.assignOrderToDriver(orderDao.getOrder().getId(), retrieverUserId, retrieverUserId);
+        return orderService.assignOrderToDriver(historyRec.getOrder().getId(), retrieverUserId,
+                retrieverUserId);
     }
 
     @RequestMapping(value = "/completeOrder", method = RequestMethod.POST)
-    public OrderDetailsDao completeOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
-                                         @RequestBody OrderDetailsDao orderDao) {
+    public HistoryRec completeOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                         @RequestBody HistoryRec historyRec) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
-        return orderService.completeOrder(orderDao.getOrder().getId(), driverId);
+        return orderService.completeOrder(historyRec.getOrder().getId(), driverId);
     }
 
     @RequestMapping(value = "/refuseOrder", method = RequestMethod.POST)
-    public OrderDetailsDao refuseOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
-                                       @RequestBody OrderDetailsDao orderDao) {
+    public HistoryRec refuseOrder(@CookieValue(value = "userToken", defaultValue = "") String token,
+                                       @RequestBody HistoryRec historyRec) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
-        return orderService.refuseOrder(orderDao.getOrder().getId(), driverId);
+        return orderService.refuseOrder(historyRec.getOrder().getId(), driverId);
     }
 
 }

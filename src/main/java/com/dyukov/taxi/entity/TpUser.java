@@ -1,7 +1,10 @@
 package com.dyukov.taxi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Collection;
 
 @Entity
 @Table(name = "TP_User", //
@@ -29,10 +32,16 @@ public class TpUser implements Serializable {
     private String phoneNumber;
 
     @Column(name = "Encryted_Password", length = 128, nullable = false)
+    @JsonIgnore
     private String encrytedPassword;
 
     @Column(name = "Enabled", length = 1, nullable = false)
+    @JsonIgnore
     private boolean enabled;
+
+    @Transient
+    @JsonIgnore
+    private Collection<String> roleNames;
 
     public Long getUserId() {
         return userId;
@@ -88,5 +97,24 @@ public class TpUser implements Serializable {
 
     public void setPhoneNumber(String phoneNumber) {
         this.phoneNumber = phoneNumber;
+    }
+
+    public Collection<String> getRoleNames() {
+        return roleNames;
+    }
+
+    public void setRoleNames(Collection<String> roleNames) {
+        this.roleNames = roleNames;
+    }
+
+    @Override
+    public String toString() {
+        return "TpUser{" +
+                "userId=" + userId +
+                ", userName='" + userName + '\'' +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                '}';
     }
 }

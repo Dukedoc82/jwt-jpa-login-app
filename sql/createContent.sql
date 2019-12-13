@@ -155,7 +155,7 @@ INSERT INTO tp_status VALUES (4, 'tp.status.completed');
 go;
 
 CREATE VIEW current_status_orders_view AS
-Select b.* from (
+Select b.ID as hist_id, b.* from (
                  SELECT
                         ORDER_ID,
                         MAX(UPDATE_DATETIME) as upd_time

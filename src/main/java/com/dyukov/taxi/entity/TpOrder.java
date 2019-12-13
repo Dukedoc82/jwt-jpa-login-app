@@ -14,7 +14,7 @@ public class TpOrder implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Client_Id")
     private TpUser client;
 
@@ -95,5 +95,18 @@ public class TpOrder implements Serializable {
 
     public TpUser getClient() {
         return client;
+    }
+
+    @Override
+    public String toString() {
+        return "TpOrder{" +
+                "id=" + id +
+                ", client=" + client +
+                ", addressFrom='" + addressFrom + '\'' +
+                ", addressTo='" + addressTo + '\'' +
+                ", mapCoordinates='" + mapCoordinates + '\'' +
+                ", appointmentDate=" + appointmentDate +
+                ", clientComments='" + clientComments + '\'' +
+                '}';
     }
 }

@@ -1,5 +1,7 @@
 package com.dyukov.taxi.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -12,26 +14,44 @@ public class OrderHistory implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @JsonIgnore
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Order_Id")
     private TpOrder order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Status_Id")
-    private TpOrderStatus orderStatus;
+    private TpOrderStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Driver_Id")
     private TpUser driver;
 
     @Column(name = "Update_Datetime")
-    private Date date;
+    private Date updatedOn;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Updated_By")
     private TpUser updatedBy;
+
+    public OrderHistory() {
+        super();
+    }
+
+    private OrderHistory(TpOrder order, TpOrderStatus status, TpUser driver) {
+        this.order = order;
+        this.status = status;
+        this.driver = driver;
+        this.updatedBy = driver;
+        this.updatedOn = new Date();
+    }
+
+    public OrderHistory(TpOrder order, TpOrderStatus orderStatus, TpUser driver, TpUser updatedBy) {
+        this(order, orderStatus, driver);
+        this.updatedBy = updatedBy;
+    }
 
     public Long getId() {
         return id;
@@ -49,12 +69,12 @@ public class OrderHistory implements Serializable {
         this.order = order;
     }
 
-    public TpOrderStatus getOrderStatus() {
-        return orderStatus;
+    public TpOrderStatus getStatus() {
+        return status;
     }
 
-    public void setOrderStatus(TpOrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
+    public void setOrderStatus(TpOrderStatus status) {
+        this.status = status;
     }
 
     public TpUser getDriver() {
@@ -65,12 +85,12 @@ public class OrderHistory implements Serializable {
         this.driver = driver;
     }
 
-    public Date getDate() {
-        return date;
+    public Date getUpdatedOn() {
+        return updatedOn;
     }
 
-    public void setDate(Date date) {
-        this.date = date;
+    public void setUpdatedOn(Date updatedOn) {
+        this.updatedOn = updatedOn;
     }
 
     public TpUser getUpdatedBy() {
@@ -81,4 +101,15 @@ public class OrderHistory implements Serializable {
         this.updatedBy = updatedBy;
     }
 
+    @Override
+    public String toString() {
+        return "OrderHistory{" +
+                "id=" + id +
+                ", order=" + order +
+                ", status=" + status +
+                ", driver=" + driver +
+                ", updatedOn=" + updatedOn +
+                ", updatedBy=" + updatedBy +
+                '}';
+    }
 }

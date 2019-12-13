@@ -8,7 +8,7 @@ public interface IUserDetailsRepository {
 
     TpUser findUserAccount(String userName);
 
-    Collection<TpUser> findAll();
+    Collection findAll();
 
     TpUser findUserAccount(Long userId);
 
