@@ -27,4 +27,6 @@ public interface IOrderRepository {
     OrderHistory refuseOrder(OrderHistory orderDetails, TpUser updater);
 
     Collection getDriverOrders(Long driverId);
+
+    Collection getAssignedDriverOrders(Long driverId);
 }

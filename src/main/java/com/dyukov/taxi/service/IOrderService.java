@@ -14,7 +14,7 @@ public interface IOrderService {
 
     HistoryRec getOrderById(Long id);
 
-    Collection<HistoryRec> getActualOrders();
+    Collection getActualOrders();
 
     HistoryRec assignOrderToDriver(Long orderId, Long driverId, Long updatedBy);
 
@@ -26,7 +26,9 @@ public interface IOrderService {
 
     HistoryRec refuseOrder(Long id, Long driverId);
 
-    Collection<HistoryRec> getActualUserOrders(Long retrieverUserId);
+    Collection getActualUserOrders(Long retrieverUserId);
 
     Collection getDriverOrders(Long driverId);
+
+    Collection getAssignedDriverOrders(Long driverId);
 }

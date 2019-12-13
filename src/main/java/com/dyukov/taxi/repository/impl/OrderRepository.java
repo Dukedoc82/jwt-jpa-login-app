@@ -9,6 +9,7 @@ import com.dyukov.taxi.exception.OrderNotFoundException;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
+import org.apache.tomcat.jni.OS;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -144,6 +145,24 @@ public class OrderRepository implements IOrderRepository {
                     "and e.order.id = r.order.id)";
             Query query = entityManager.createQuery(sql);
             query.setParameter("driverId", driverId);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
+    }
+
+    @Override
+    public Collection getAssignedDriverOrders(Long driverId) {
+        try {
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.driver.userId = :driverId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.driver.userId = e.driver.userId " +
+                    "and e.order.id = r.order.id) " +
+                    "and e.status.titleKey = :assignedStatus";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("driverId", driverId);
+            query.setParameter("assignedStatus", OrderStatuses.ASSIGNED);
             return query.getResultList();
         } catch (NoResultException e) {
             return new ArrayList();
