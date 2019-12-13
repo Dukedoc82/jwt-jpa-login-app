@@ -3,11 +3,11 @@ package com.dyukov.taxi.repository;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserRole;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface IUserRoleRepository {
 
-    List<String> getRoleNames(Long userId);
+    Collection getRoleNames(Long userId);
 
     UserRole saveUserRole(TpUser tpUser);
 

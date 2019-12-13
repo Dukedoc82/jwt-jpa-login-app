@@ -35,4 +35,11 @@ public class TpRole implements Serializable {
         this.roleName = roleName;
     }
 
+    @Override
+    public String toString() {
+        return "TpRole{" +
+                "roleId=" + roleId +
+                ", roleName='" + roleName + '\'' +
+                '}';
+    }
 }

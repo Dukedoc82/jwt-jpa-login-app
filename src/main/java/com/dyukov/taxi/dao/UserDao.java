@@ -1,5 +1,7 @@
 package com.dyukov.taxi.dao;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class UserDao {
 
     private Long userId;

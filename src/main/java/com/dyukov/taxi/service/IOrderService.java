@@ -1,27 +1,30 @@
 package com.dyukov.taxi.service;
 
-import com.dyukov.taxi.dao.ActualOrderDao;
+import com.dyukov.taxi.dao.HistoryRec;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 
 import java.util.Collection;
 
 public interface IOrderService {
 
-    ActualOrderDao createOrder(OrderDao orderDao, Long updatedBy);
+    HistoryRec createOrder(OrderDao orderDao, Long updatedBy);
 
-    ActualOrderDao getOrderById(Long id, Long retrieverUserId);
+    HistoryRec getOrderById(Long id, Long retrieverUserId);
 
-    ActualOrderDao getOrderById(Long id);
+    HistoryRec getOrderById(Long id);
 
-    Collection<ActualOrderDao> getActualOrders();
+    Collection<HistoryRec> getActualOrders();
 
-    ActualOrderDao assignOrderToDriver(ActualOrderDao orderDao, Long driverId, Long updatedBy);
+    HistoryRec assignOrderToDriver(Long orderId, Long driverId, Long updatedBy);
 
-    ActualOrderDao cancelOrder(Long orderId, Long retrieverUserId);
+    HistoryRec cancelOrder(Long orderId, Long retrieverUserId);
 
-    ActualOrderDao completeOrder(Long orderId, Long driverId);
+    HistoryRec completeOrder(Long orderId, Long driverId);
 
-    ActualOrderDao refuseOrder(Long id, Long driverId);
+    HistoryRec completeOrderAsAdmin(Long orderId);
 
-    Collection<ActualOrderDao> getActualUserOrders(Long retrieverUserId);
+    HistoryRec refuseOrder(Long id, Long driverId);
+
+    Collection<HistoryRec> getActualUserOrders(Long retrieverUserId);
 }

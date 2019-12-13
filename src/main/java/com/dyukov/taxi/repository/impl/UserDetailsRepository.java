@@ -1,9 +1,12 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.exception.TaxiServiceException;
+import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +26,7 @@ public class UserDetailsRepository implements IUserDetailsRepository {
     @Autowired
     private IUserRoleRepository userRoleRepository;
 
+    @Cacheable("users")
     public TpUser findUserAccount(String userName) {
         try {
             String sql = "Select e from " + TpUser.class.getName() + " e " //
@@ -31,13 +35,16 @@ public class UserDetailsRepository implements IUserDetailsRepository {
             Query query = entityManager.createQuery(sql, TpUser.class);
             query.setParameter("userName", userName);
 
-            return (TpUser) query.getSingleResult();
+            TpUser user = (TpUser) query.getSingleResult();
+            user.setRoleNames(userRoleRepository.getRoleNames(user.getUserId()));
+
+            return user;
         } catch (NoResultException e) {
-            return null;
+            throw new UserNotFoundException(String.format(TaxiServiceException.USER_NAME_DOES_NOT_EXIST, userName));
         }
     }
 
-    public Collection<TpUser> findAll() {
+    public Collection findAll() {
         try {
             String sql = "Select e from " + TpUser.class.getName() + " e";
             Query query = entityManager.createQuery(sql);
@@ -47,6 +54,7 @@ public class UserDetailsRepository implements IUserDetailsRepository {
         }
     }
 
+    @Cacheable("users")
     public TpUser findUserAccount(Long userId) {
         try {
             String sql = "Select e from " + TpUser.class.getName() + " e " //
@@ -54,10 +62,11 @@ public class UserDetailsRepository implements IUserDetailsRepository {
 
             Query query = entityManager.createQuery(sql, TpUser.class);
             query.setParameter("userId", userId);
-
-            return (TpUser) query.getSingleResult();
+            TpUser user = (TpUser) query.getSingleResult();
+            user.setRoleNames(userRoleRepository.getRoleNames(userId));
+            return user;
         } catch (NoResultException e) {
-            return null;
+            throw new UserNotFoundException(userId);
         }
     }
 

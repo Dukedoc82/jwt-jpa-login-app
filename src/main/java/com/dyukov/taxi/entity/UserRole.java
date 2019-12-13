@@ -16,11 +16,11 @@ public class UserRole implements Serializable {
     @Column(name = "Id", nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "User_Id", nullable = false)
     private TpUser tpUser;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "Role_Id", nullable = false)
     private TpRole tpRole;
 
@@ -48,4 +48,12 @@ public class UserRole implements Serializable {
         this.tpRole = tpRole;
     }
 
+    @Override
+    public String toString() {
+        return "UserRole{" +
+                "id=" + id +
+                ", tpUser=" + tpUser +
+                ", tpRole=" + tpRole +
+                '}';
+    }
 }

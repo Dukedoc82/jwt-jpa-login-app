@@ -9,9 +9,10 @@ import javax.persistence.*;
 @Entity
 @Immutable
 @Table(name = "current_status_orders_view")
-public class ActualOrder {
+public class OrderDetails {
 
     @Id
+    @JsonIgnore
     private Long id;
 
     @ManyToOne
@@ -25,6 +26,10 @@ public class ActualOrder {
     @ManyToOne
     @JoinColumn(name = "status_id")
     private TpOrderStatus status;
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "hist_id")
+    private OrderHistory historyRec;
 
     public Long getId() {
         return id;
@@ -57,5 +62,24 @@ public class ActualOrder {
 
     public void setStatus(TpOrderStatus status) {
         this.status = status;
+    }
+
+    public OrderHistory getHistoryRec() {
+        return historyRec;
+    }
+
+    public void setHistoryRec(OrderHistory historyRec) {
+        this.historyRec = historyRec;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderDetails{" +
+                "id=" + id +
+                ", order=" + order +
+                ", driver=" + driver +
+                ", status=" + status +
+                ", historyRec=" + historyRec +
+                '}';
     }
 }

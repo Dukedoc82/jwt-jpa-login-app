@@ -3,6 +3,7 @@ package com.dyukov.taxi.repository.impl;
 import com.dyukov.taxi.entity.TpOrderStatus;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
@@ -16,6 +17,7 @@ public class OrderStatusRepository implements IOrderStatusRepository {
     @Autowired
     private EntityManager entityManager;
 
+    @Cacheable("statuses")
     public TpOrderStatus getStatusByKey(String key) {
         try {
             String sql = "Select e from " + TpOrderStatus.class.getName() + " e "

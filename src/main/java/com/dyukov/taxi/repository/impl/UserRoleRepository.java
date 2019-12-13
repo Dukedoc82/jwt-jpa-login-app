@@ -5,12 +5,13 @@ import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserRole;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-import java.util.List;
+import java.util.Collection;
 
 @Repository
 @Transactional
@@ -19,7 +20,8 @@ public class UserRoleRepository implements IUserRoleRepository {
     @Autowired
     private EntityManager entityManager;
 
-    public List<String> getRoleNames(Long userId) {
+    @Cacheable("roles")
+    public Collection getRoleNames(Long userId) {
         String sql = "Select ur.tpRole.roleName from " + UserRole.class.getName() + " ur " //
                 + " where ur.tpUser.userId = :userId ";
 
