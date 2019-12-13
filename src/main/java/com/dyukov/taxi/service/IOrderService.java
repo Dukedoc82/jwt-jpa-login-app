@@ -1,7 +1,6 @@
 package com.dyukov.taxi.service;
 
 import com.dyukov.taxi.dao.HistoryRec;
-import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 
 import java.util.Collection;
