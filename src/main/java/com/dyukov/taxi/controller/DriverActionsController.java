@@ -65,4 +65,9 @@ public class DriverActionsController {
         return orderService.getCancelledDriverOrders(driverId);
     }
 
+    @RequestMapping(value = "/openedOrders")
+    public Collection getOpenedOrders() {
+        return orderService.getOpenedOrders();
+    }
+
 }
