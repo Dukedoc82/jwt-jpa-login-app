@@ -167,6 +167,11 @@ public class OrderRepository implements IOrderRepository {
         return getUserOrdersByStatus(userId, OrderStatuses.CANCELED);
     }
 
+    @Override
+    public Collection getCompletedUserOrders(Long userId) {
+        return getUserOrdersByStatus(userId, OrderStatuses.COMPLETED);
+    }
+
     private Collection getUserOrdersByStatus(Long userId, String status) {
         try {
             String sql = "Select e from " + OrderHistory.class.getName() + " e " +

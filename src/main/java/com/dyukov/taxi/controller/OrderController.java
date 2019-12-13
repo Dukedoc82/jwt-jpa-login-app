@@ -86,6 +86,12 @@ public class OrderController {
         return orderService.getCancelledUserOrders(retrieverUserId);
     }
 
+    @RequestMapping(value = "/completed")
+    public Collection getUserCompletedOrders(@CookieValue(value = "userToken", defaultValue = "") String token) {
+        Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
+        return orderService.getCompletedUserOrders(retrieverUserId);
+    }
+
     private void addUserData(String token, OrderDao order) {
         UserDao client = new UserDao();
         client.setUserId(tokenUtil.getUserIdFromToken(token));
