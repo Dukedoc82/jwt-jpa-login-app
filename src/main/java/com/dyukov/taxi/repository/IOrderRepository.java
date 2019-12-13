@@ -33,4 +33,6 @@ public interface IOrderRepository {
     Collection getCompletedDriverOrders(Long driverId);
 
     Collection getCancelledDriverOrders(Long driverId);
+
+    Collection getOpenedUserOrders(Long userId);
 }

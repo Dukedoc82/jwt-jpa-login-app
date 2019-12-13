@@ -152,6 +152,28 @@ public class OrderRepository implements IOrderRepository {
         return getDriverOrdersByStatus(driverId, OrderStatuses.CANCELED);
     }
 
+    @Override
+    public Collection getOpenedUserOrders(Long userId) {
+        return getUserOrdersByStatus(userId, OrderStatuses.OPENED);
+    }
+
+    private Collection getUserOrdersByStatus(Long userId, String status) {
+        try {
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.order.client.userId = :userId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.order.client.userId = e.order.client.userId " +
+                    "and e.order.id = r.order.id) " +
+                    "and e.status.titleKey = :status";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("userId", userId);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
+    }
+
     private Collection getDriverOrdersByStatus(Long driverId, String status) {
         try {
             String sql = "Select e from " + OrderHistory.class.getName() + " e " +

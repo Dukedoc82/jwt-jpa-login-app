@@ -39,9 +39,9 @@ public class OrderService implements IOrderService {
 
     public HistoryRec getOrderById(Long id, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
-            OrderHistory order = orderRepository.getById(id, retrieverUserId);
-            validateOrder(order, retriever);
-            return convertToDto(orderRepository.getById(id, retrieverUserId));
+        OrderHistory order = orderRepository.getById(id, retrieverUserId);
+        validateOrder(order, retriever);
+        return convertToDto(orderRepository.getById(id, retrieverUserId));
     }
 
     public Collection getActualOrders() {
@@ -114,6 +114,11 @@ public class OrderService implements IOrderService {
     @Override
     public Collection getCancelledDriverOrders(Long driverId) {
         return orderRepository.getCancelledDriverOrders(driverId);
+    }
+
+    @Override
+    public Collection getOpenedUserOrders(Long userId) {
+        return orderRepository.getOpenedUserOrders(userId);
     }
 
     private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
