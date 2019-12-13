@@ -39,9 +39,9 @@ public class OrderService implements IOrderService {
 
     public HistoryRec getOrderById(Long id, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
-            OrderHistory order = orderRepository.getById(id, retrieverUserId);
-            validateOrder(order, retriever);
-            return convertToDto(orderRepository.getById(id, retrieverUserId));
+        OrderHistory order = orderRepository.getById(id, retrieverUserId);
+        validateOrder(order, retriever);
+        return convertToDto(orderRepository.getById(id, retrieverUserId));
     }
 
     public Collection getActualOrders() {
@@ -81,7 +81,11 @@ public class OrderService implements IOrderService {
     }
 
     public Collection getActualUserOrders(Long userId) {
-        return getActualUserOrders(userId, null);
+        TpUser user = userDetailsRepository.findUserAccount(userId);
+        if (isAdmin(user)) {
+            return orderRepository.getAll();
+        }
+        return orderRepository.getAllUserOrders(userId);
     }
 
     public Collection getActualUserOrders(Long userId, Long retrieverId) {
@@ -110,6 +114,26 @@ public class OrderService implements IOrderService {
     @Override
     public Collection getCancelledDriverOrders(Long driverId) {
         return orderRepository.getCancelledDriverOrders(driverId);
+    }
+
+    @Override
+    public Collection getOpenedUserOrders(Long userId) {
+        return orderRepository.getOpenedUserOrders(userId);
+    }
+
+    @Override
+    public Collection getAssignedUserOrders(Long userId) {
+        return orderRepository.getAssignedUserOrders(userId);
+    }
+
+    @Override
+    public Collection getCancelledUserOrders(Long userId) {
+        return orderRepository.getCancelledUserOrders(userId);
+    }
+
+    @Override
+    public Collection getCompletedUserOrders(Long userId) {
+        return orderRepository.getCompletedUserOrders(userId);
     }
 
     private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
