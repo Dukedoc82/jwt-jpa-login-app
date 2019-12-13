@@ -81,7 +81,11 @@ public class OrderService implements IOrderService {
     }
 
     public Collection getActualUserOrders(Long userId) {
-        return getActualUserOrders(userId, null);
+        TpUser user = userDetailsRepository.findUserAccount(userId);
+        if (isAdmin(user)) {
+            return orderRepository.getAll();
+        }
+        return orderRepository.getAllUserOrders(userId);
     }
 
     public Collection getActualUserOrders(Long userId, Long retrieverId) {
