@@ -57,14 +57,14 @@ public class OrderController {
         return orderService.getOrderById(orderId, retrieverUserId);
     }
 
-    @ApiOperation(httpMethod = "POST", value = "Cancel the order specified by the order record.",
+    @ApiOperation(httpMethod = "PUT", value = "Cancel the order specified by the order record.",
             response = HistoryRec.class)
     @ApiResponses({
             @ApiResponse(code = 200, message = "Success", response = HistoryRec.class),
             @ApiResponse(code = 500, message = "Cannot cancel cancelled or assigned order. Order #%d is %s.",
                     response = WrongStatusOrder.class)
     })
-    @RequestMapping(value = "/cancel/{orderId}", method = RequestMethod.POST)
+    @RequestMapping(value = "/cancel/{orderId}", method = RequestMethod.PUT)
     public HistoryRec cancelOrder(@ApiParam(hidden = true)
                                       @CookieValue(value = "userToken", defaultValue = "") String token,
                                   @ApiParam(value = "Order id to cancel.", required = true, example = "5")
