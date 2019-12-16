@@ -6,6 +6,8 @@ import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
@@ -20,6 +22,8 @@ import java.util.Collection;
 @Repository
 @Transactional
 public class UserDetailsRepository implements IUserDetailsRepository {
+
+    private Logger logger = LoggerFactory.getLogger(UserDetailsRepository.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -41,7 +45,9 @@ public class UserDetailsRepository implements IUserDetailsRepository {
 
             return user;
         } catch (NoResultException e) {
-            throw new UserNotFoundException(String.format(TaxiServiceException.USER_NAME_DOES_NOT_EXIST, userName));
+            String message = String.format(TaxiServiceException.USER_NAME_DOES_NOT_EXIST, userName);
+            logger.error(message, e);
+            throw new UserNotFoundException(message, e);
         }
     }
 
@@ -51,6 +57,7 @@ public class UserDetailsRepository implements IUserDetailsRepository {
             Query query = entityManager.createQuery(sql);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn("No user found.");
             return new ArrayList<>();
         }
     }
