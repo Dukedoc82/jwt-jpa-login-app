@@ -2,6 +2,7 @@ package com.dyukov.taxi.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.HttpClientErrorException;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -17,15 +18,16 @@ public class SpringFoxConfig {
 
     @Bean
     public Docket api() {
+        Class[] ignoredClasses = {Throwable.class, StackTraceElement.class, HttpClientErrorException.Unauthorized.class};
         return new Docket(DocumentationType.SWAGGER_2).select()
                 .apis(RequestHandlerSelectors
                         .basePackage("com.dyukov.taxi.controller"))
                 .paths(PathSelectors.regex("/.*"))
-                .build().apiInfo(apiEndPointsInfo());
+                .build().apiInfo(apiEndPointsInfo()).ignoredParameterTypes().ignoredParameterTypes(ignoredClasses);
     }
     private ApiInfo apiEndPointsInfo() {
-        return new ApiInfoBuilder().title("Spring Boot REST API")
-                .description("Employee Management REST API")
+        return new ApiInfoBuilder().title("EPAM taxi REST API")
+                .description("Taxi service REST API")
                 .contact(new Contact("Dmitry Dyukov", "www.javaguides.net", "dmitry.dyukov@gmail.com"))
                 .license("Apache 2.0")
                 .licenseUrl("http://www.apache.org/licenses/LICENSE-2.0.html")

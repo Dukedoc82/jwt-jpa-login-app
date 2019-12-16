@@ -3,9 +3,10 @@ package com.dyukov.taxi.controller;
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
-import com.dyukov.taxi.model.JwtRequest;
+import com.dyukov.taxi.model.LoginRequest;
 import com.dyukov.taxi.model.TpUserDetails;
 import com.dyukov.taxi.service.IUserDetailsService;
+import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
+@Api(value = "Controller for authentication and registration endpoints.",
+        description = "Controller for authentication and registration endpoints.")
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
@@ -56,7 +59,7 @@ public class JwtAuthenticationController {
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest authenticationRequest) throws Exception {
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         final TpUserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
