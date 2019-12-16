@@ -1,6 +1,6 @@
 package com.dyukov.taxi.controller;
 
-import com.dyukov.taxi.entity.TpOrderStatus;
+import com.dyukov.taxi.dao.Status;
 import com.dyukov.taxi.service.IOrderStatusService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Collection;
 
-@Api(value = "The controller which provides access to order status retrieval.")
+@Api(value = "The controller which provides access to order status retrieval.",
+        description = "The controller which provides access to order status retrieval.")
 @RestController
 @RequestMapping("/orderStatus")
 public class OrderStatusController {
@@ -24,19 +25,19 @@ public class OrderStatusController {
 
     @ApiOperation(value = "Get all order statuses available in the system.", httpMethod = "GET")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = TpOrderStatus.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Success", response = Status.class, responseContainer = "List")
     })
     @RequestMapping(value = "/", method = RequestMethod.GET)
-    public Collection<TpOrderStatus> getAvailableStatuses() {
+    public Collection<Status> getAvailableStatuses() {
         return orderStatusService.getAvailableStatuses();
     }
 
     @ApiOperation(value = "Get order status specified by key value.", httpMethod = "GET")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = TpOrderStatus.class)
+            @ApiResponse(code = 200, message = "Success", response = Status.class)
     })
     @RequestMapping(value = "/getByKey/{key}", method = RequestMethod.GET)
-    public TpOrderStatus getStatusByKey(@PathVariable(name = "key") String key) {
+    public Status getStatusByKey(@PathVariable(name = "key") String key) {
         return orderStatusService.getStatusByKey(key);
     }
 }

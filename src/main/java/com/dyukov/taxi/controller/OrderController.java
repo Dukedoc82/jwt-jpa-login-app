@@ -19,7 +19,7 @@ import java.util.Collection;
 @RestController
 @RequestMapping("/order")
 @Api(value = "The controller which handles different types of actions with orders",
-        consumes = MediaType.APPLICATION_JSON_VALUE)
+        description = "The controller which handles different types of actions with orders")
 public class OrderController {
 
     @Autowired

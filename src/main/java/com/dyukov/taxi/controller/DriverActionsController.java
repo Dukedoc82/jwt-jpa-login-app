@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
-@Api(value = "Controller for driver actions. Access permitted for the users with driver and administrator roles only.")
+@Api(value = "Controller for driver actions. Access permitted for the users with driver and administrator roles only.",
+        description = "Controller for driver actions. Access permitted for the users with driver and administrator roles only.")
 @RestController
 @RequestMapping("/driver")
 public class DriverActionsController {

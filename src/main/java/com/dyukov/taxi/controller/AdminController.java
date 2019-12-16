@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
-@Api(value = "Controller for admin actions. Access permitted for the users with administrator role only.")
+@Api(value = "Controller for admin actions. Access permitted for the users with administrator role only.",
+        description = "Controller for admin actions. Access permitted for the users with administrator role only.")
 @RestController
 @RequestMapping("/admin")
 public class AdminController {
