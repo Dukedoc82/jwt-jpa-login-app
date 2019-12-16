@@ -23,6 +23,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private static final String[] AUTH_WHITELIST = {
+
+            // -- swagger ui
+            "/swagger-resources/**",
+            "/swagger-ui.html",
+            "/v2/api-docs",
+            "/webjars/**"
+    };
+
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
@@ -56,7 +65,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         // We don't need CSRF for this example
         httpSecurity.csrf().disable()
                 // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/authenticate", "/register", "/registerAsADriver").permitAll().
+                .authorizeRequests().antMatchers(AUTH_WHITELIST).permitAll().
                 antMatchers("/new", "/admin/**").
                         hasAuthority("ROLE_ADMIN").
                 antMatchers("/driver/**").
