@@ -5,9 +5,12 @@ import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.exception.OrderNotFoundException;
+import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -23,6 +26,10 @@ import java.util.Collection;
 @Repository
 @Transactional
 public class OrderRepository implements IOrderRepository {
+
+    private static final String NO_ORDERS_FOUND_MESSAGE = "No orders found";
+
+    private Logger logger = LoggerFactory.getLogger(OrderRepository.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -42,6 +49,7 @@ public class OrderRepository implements IOrderRepository {
             Query query = entityManager.createQuery(sql);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList<>();
         }
     }
@@ -57,6 +65,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("userId", retrieverUserId);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList<>();
         }
     }
@@ -73,6 +82,7 @@ public class OrderRepository implements IOrderRepository {
             query.setMaxResults(1);
             return (OrderHistory) query.getSingleResult();
         } catch (NoResultException e) {
+            logger.error(String.format(TaxiServiceException.ORDER_DOES_NOT_EXIST, id), e);
             throw new OrderNotFoundException(id, e);
         }
     }
@@ -88,6 +98,7 @@ public class OrderRepository implements IOrderRepository {
             query.setMaxResults(1);
             return (OrderHistory) query.getSingleResult();
         } catch (NoResultException e) {
+            logger.error(String.format(TaxiServiceException.ORDER_DOES_NOT_EXIST, id), e);
             throw new OrderNotFoundException(id, e);
         }
     }
@@ -133,6 +144,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("driverId", driverId);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.error(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
     }
@@ -183,6 +195,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("status", OrderStatuses.OPENED);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
     }
@@ -200,6 +213,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("status", status);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
     }
@@ -217,6 +231,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("status", status);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
     }
