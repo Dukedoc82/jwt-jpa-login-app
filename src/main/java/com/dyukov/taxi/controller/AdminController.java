@@ -1,7 +1,7 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
-import com.dyukov.taxi.dao.HistoryRec;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.service.IOrderService;
@@ -27,10 +27,10 @@ public class AdminController {
     @Autowired
     private JwtTokenUtil tokenUtil;
 
-    @ApiOperation(value = "Get a list of all orders in the system.", httpMethod = "GET", response = HistoryRec.class,
+    @ApiOperation(value = "Get a list of all orders in the system.", httpMethod = "GET", response = OrderDetailsDao.class,
             responseContainer = "Collection")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = HistoryRec.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Success", response = OrderDetailsDao.class, responseContainer = "List")
     })
     @RequestMapping(value = "/order", method = RequestMethod.GET)
     public Collection getActualOrders() {
@@ -78,9 +78,9 @@ public class AdminController {
     }
 
     @ApiOperation(value = "Get a list of all orders for the specified user.", httpMethod = "GET",
-            response = HistoryRec.class, responseContainer = "List")
+            response = OrderDetailsDao.class, responseContainer = "List")
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = HistoryRec.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Success", response = OrderDetailsDao.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "User #%d doesn't exist.", response = UserNotFoundException.class),
     })
     @RequestMapping("/user/{userId}/order")

@@ -30,23 +30,19 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
+        final String requestTokenHeader = request.getHeader("usertoken");
         String username = null;
         String jwtToken = null;
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("userToken")) {
-                    jwtToken = cookie.getValue();
-                    try {
-                        username = jwtTokenUtil.getUsernameFromToken(jwtToken);
-                    } catch (IllegalArgumentException e) {
-                        logger.warn("Unable to get JWT Token");
-                    } catch (ExpiredJwtException e) {
-                        logger.warn("JWT Token has expired");
-                    }
-                }
+        if (requestTokenHeader != null) {
+            jwtToken = requestTokenHeader;
+            try {
+                username = jwtTokenUtil.getUsernameFromToken(jwtToken);
+            } catch (IllegalArgumentException e) {
+                logger.warn("Unable to get JWT Token");
+            } catch (ExpiredJwtException e) {
+                logger.warn("JWT Token has expired");
             }
         }
         // Once we get the token validate it.
@@ -71,7 +67,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         return request.getServletPath().equals("/register")
-                || request.getServletPath().equals("/registerAsADriver");
+                || request.getServletPath().equals("/registerAsADriver")
+                || request.getServletPath().equals("/authenticate");
     }
 
 }

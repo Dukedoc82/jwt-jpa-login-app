@@ -1,7 +1,7 @@
 package com.dyukov.taxi.service.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.dao.HistoryRec;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
@@ -32,12 +32,12 @@ public class OrderService implements IOrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public HistoryRec createOrder(OrderDao orderDao, Long updatedBy) {
+    public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
         TpUser client = userDetailsRepository.findUserAccount(updatedBy);
         return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), client));
     }
 
-    public HistoryRec getOrderById(Long id, Long retrieverUserId) {
+    public OrderDetailsDao getOrderById(Long id, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
         OrderHistory order = orderRepository.getById(id, retrieverUserId);
         validateOrder(order, retriever);
@@ -48,7 +48,7 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.getAll());
     }
 
-    public HistoryRec assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
+    public OrderDetailsDao assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderAssignment(orderHistory, driverId);
         TpUser driver = userDetailsRepository.findUserAccount(driverId);
@@ -56,7 +56,7 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.assignOrderToDriver(orderHistory, driver, updater));
     }
 
-    public HistoryRec cancelOrder(Long orderId, Long retrieverUserId) {
+    public OrderDetailsDao cancelOrder(Long orderId, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderCancellation(retriever, orderHistory);
@@ -64,7 +64,7 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.cancelOrder(newRec));
     }
 
-    public HistoryRec completeOrder(Long orderId, Long driverId) {
+    public OrderDetailsDao completeOrder(Long orderId, Long driverId) {
         OrderHistory orderDetails = orderRepository.getById(orderId, driverId);
         validateOrderCompletion(orderDetails, driverId);
         OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), orderDetails.getDriver(),
@@ -72,7 +72,7 @@ public class OrderService implements IOrderService {
         return convertToDto(orderRepository.completeOrder(newRecord));
     }
 
-    public HistoryRec refuseOrder(Long id, Long updaterId) {
+    public OrderDetailsDao refuseOrder(Long id, Long updaterId) {
         OrderHistory orderDetails = orderRepository.getById(id);
         TpUser updater = userDetailsRepository.findUserAccount(updaterId);
         validateOrderRefusal(orderDetails, updater);
@@ -141,12 +141,12 @@ public class OrderService implements IOrderService {
         return orderRepository.getOpenedOrders();
     }
 
-    private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
+    private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    private HistoryRec convertToDto(OrderHistory orderHistory) {
-        return modelMapper.map(orderHistory, HistoryRec.class);
+    private OrderDetailsDao convertToDto(OrderHistory orderHistory) {
+        return modelMapper.map(orderHistory, OrderDetailsDao.class);
     }
 
     private TpOrder convertFromDto(OrderDao orderDao) {

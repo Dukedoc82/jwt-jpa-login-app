@@ -1,7 +1,7 @@
 package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
-import com.dyukov.taxi.dao.HistoryRec;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.exception.OrderNotFoundException;
@@ -10,7 +10,6 @@ import com.dyukov.taxi.exception.WrongStatusOrder;
 import com.dyukov.taxi.service.IOrderService;
 import io.swagger.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -28,46 +27,46 @@ public class OrderController {
     @Autowired
     private IOrderService orderService;
 
-    @ApiOperation(httpMethod = "POST", value = "Create a new order.", response = HistoryRec.class)
+    @ApiOperation(httpMethod = "POST", value = "Create a new order.", response = OrderDetailsDao.class)
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = HistoryRec.class),
+            @ApiResponse(code = 200, message = "Success", response = OrderDetailsDao.class),
             @ApiResponse(code = 500, message = "User #%d doesn't exist.", response = UserNotFoundException.class)
     })
     @RequestMapping(value = "/new", method = RequestMethod.POST)
-    public HistoryRec createOrder(@ApiParam(value = "Token value of the logged in user. Cookie param.", required = true)
-                                        @CookieValue(value = "userToken", defaultValue = "") String token,
-                                  @ApiParam(value = "Order details to persist.", required = true)
+    public OrderDetailsDao createOrder(@ApiParam(value = "Token value of the logged in user. Cookie param.", required = true)
+                                        @RequestHeader("usertoken") String token,
+                                       @ApiParam(value = "Order details to persist.", required = true)
                                         @RequestBody OrderDao order) {
         addUserData(token, order);
         return orderService.createOrder(order, tokenUtil.getUserIdFromToken(token));
     }
 
-    @ApiOperation(httpMethod = "GET", value = "Get order details by order id.", response = HistoryRec.class)
+    @ApiOperation(httpMethod = "GET", value = "Get order details by order id.", response = OrderDetailsDao.class)
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = HistoryRec.class),
+            @ApiResponse(code = 200, message = "Success", response = OrderDetailsDao.class),
             @ApiResponse(code = 500, message = "User #%d doesn't exist.", response = UserNotFoundException.class),
             @ApiResponse(code = 500, message = "Order #%d doesn't exist.", response = OrderNotFoundException.class),
             @ApiResponse(code = 401, message = "Unauthorized", response = HttpClientErrorException.Unauthorized.class)
     })
     @RequestMapping(value = "/{id}")
-    public HistoryRec getOrderById(@ApiParam(hidden = true) @CookieValue(value = "userToken", defaultValue = "") String token,
-                                   @ApiParam(value = "The id of the order to retrieve information about.")
+    public OrderDetailsDao getOrderById(@ApiParam(hidden = true) @CookieValue(value = "userToken", defaultValue = "") String token,
+                                        @ApiParam(value = "The id of the order to retrieve information about.")
                                        @PathVariable("id") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getOrderById(orderId, retrieverUserId);
     }
 
     @ApiOperation(httpMethod = "PUT", value = "Cancel the order specified by the order record.",
-            response = HistoryRec.class)
+            response = OrderDetailsDao.class)
     @ApiResponses({
-            @ApiResponse(code = 200, message = "Success", response = HistoryRec.class),
+            @ApiResponse(code = 200, message = "Success", response = OrderDetailsDao.class),
             @ApiResponse(code = 500, message = "Cannot cancel cancelled or assigned order. Order #%d is %s.",
                     response = WrongStatusOrder.class)
     })
     @RequestMapping(value = "/cancel/{orderId}", method = RequestMethod.PUT)
-    public HistoryRec cancelOrder(@ApiParam(hidden = true)
+    public OrderDetailsDao cancelOrder(@ApiParam(hidden = true)
                                       @CookieValue(value = "userToken", defaultValue = "") String token,
-                                  @ApiParam(value = "Order id to cancel.", required = true, example = "5")
+                                       @ApiParam(value = "Order id to cancel.", required = true, example = "5")
                                       @PathVariable(value = "orderId") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.cancelOrder(orderId, retrieverUserId);
@@ -77,7 +76,8 @@ public class OrderController {
     @ApiResponse(code = 200, message = "Success", response = Collection.class)
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public Collection getUserOrders(@ApiParam(hidden = true)
-                                        @CookieValue(value = "userToken", defaultValue = "") String token) {
+                                        @RequestHeader("usertoken") String token) {
+        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getActualUserOrders(retrieverUserId);
     }

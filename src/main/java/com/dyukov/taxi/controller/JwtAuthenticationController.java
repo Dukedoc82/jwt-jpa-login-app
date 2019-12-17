@@ -64,9 +64,6 @@ public class JwtAuthenticationController {
         final TpUserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
         final String token = jwtTokenUtil.generateToken(userDetails);
-        HttpCookie cookie = ResponseCookie.from("userToken", token)
-                .path("/")
-                .build();
         String targetUrl = "/";
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         for (GrantedAuthority authority : authorities) {
@@ -82,7 +79,9 @@ public class JwtAuthenticationController {
                     break;
             }
         }
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+        return ResponseEntity.ok()
+                .header("Access-Control-Expose-Headers", "usertoken")
+                .header("usertoken", token)
                 .body(new AuthData(targetUrl, userDetails.getUser()));
     }
 
