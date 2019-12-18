@@ -65,7 +65,7 @@ public class OrderController {
     })
     @RequestMapping(value = "/cancel/{orderId}", method = RequestMethod.PUT)
     public OrderDetailsDao cancelOrder(@ApiParam(hidden = true)
-                                      @CookieValue(value = "userToken", defaultValue = "") String token,
+                                      @RequestHeader("usertoken") String token,
                                        @ApiParam(value = "Order id to cancel.", required = true, example = "5")
                                       @PathVariable(value = "orderId") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
@@ -77,7 +77,6 @@ public class OrderController {
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public Collection getUserOrders(@ApiParam(hidden = true)
                                         @RequestHeader("usertoken") String token) {
-        System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
         return orderService.getActualUserOrders(retrieverUserId);
     }

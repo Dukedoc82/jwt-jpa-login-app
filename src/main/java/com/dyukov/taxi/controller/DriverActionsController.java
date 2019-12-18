@@ -33,7 +33,7 @@ public class DriverActionsController {
     })
     @RequestMapping(value = "/assignOrderToMe/{id}", method = RequestMethod.PUT)
     public OrderDetailsDao assignOrder(@ApiParam(hidden = true)
-                                      @CookieValue(value = "userToken", defaultValue = "") String token,
+                                      @RequestHeader("usertoken") String token,
                                        @ApiParam(name = "id", value = "Order id to assign to the currently logged in user.")
                                   @PathVariable("id") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);
