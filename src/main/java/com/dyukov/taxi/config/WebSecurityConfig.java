@@ -76,13 +76,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 antMatchers("/hello", "/order/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_USER", "ROLE_DRIVER").
                 anyRequest().authenticated().
-                and().
-                    formLogin().loginPage("/login.html").permitAll().
-                and().
-                    logout()
-                    .logoutUrl("/logout")
-                    .deleteCookies("userToken").addLogoutHandler(new MyLogoutHandler())
-                    .invalidateHttpSession(true).permitAll().
                 /*and().
                     sessionManagement()
                         .maximumSessions(1).

@@ -5,6 +5,7 @@ import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.model.LoginRequest;
 import com.dyukov.taxi.model.TpUserDetails;
+import com.dyukov.taxi.service.ITokenService;
 import com.dyukov.taxi.service.IUserDetailsService;
 import io.swagger.annotations.Api;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,9 @@ public class JwtAuthenticationController {
     @Autowired
     private IUserDetailsService userDetailsService;
 
+    @Autowired
+    private ITokenService tokenService;
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest authenticationRequest) throws Exception {
@@ -108,6 +112,11 @@ public class JwtAuthenticationController {
     @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
     public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
         return userDetailsService.saveDriver(registrationData);
+    }
+
+    @RequestMapping(value = "/doLogout", method = RequestMethod.GET)
+    public void doLogout(@RequestHeader("userToken") String token) {
+        tokenService.addTokenToBlackList(token);
     }
 
     private void authenticate(String username, String password) throws Exception {

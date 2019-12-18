@@ -2,6 +2,8 @@ IF EXISTS(select * from sys.views WHERE NAME = 'current_status_orders_view')
     DROP VIEW current_status_orders_view;
 GO;
 
+if OBJECT_ID('dbo.TP_TOKEN_BLACKLIST', 'U') is not null
+    drop table TP_TOKEN_BLACKLIST;
 if OBJECT_ID('dbo.TP_ORDER_HISTORY', 'U') is not null
     drop table TP_ORDER_HISTORY;
 if OBJECT_ID('dbo.TP_STATUS', 'U') is not null
@@ -111,6 +113,17 @@ alter table TP_ORDER_HISTORY
     add constraint TP_ORDER_HISTORY_UPDATED_FK foreign key (UPDATED_BY)
         references TP_USER(USER_ID);
 
+create table TP_TOKEN_BLACKLIST(
+    ID                  BIGINT not null IDENTITY(1, 1),
+    TOKEN_VALUE         VARCHAR(max),
+    EXPIRE_DATETIME     DATETIME not null
+);
+
+alter table TP_TOKEN_BLACKLIST
+    add constraint TP_TOKEN_BLACKLIST_PK primary key (ID);
+
+go;
+
 SET IDENTITY_INSERT TP_User ON
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
@@ -153,14 +166,3 @@ INSERT INTO tp_status VALUES (3, 'tp.status.cancelled');
 INSERT INTO tp_status VALUES (4, 'tp.status.completed');
 
 go;
-
-CREATE VIEW current_status_orders_view AS
-Select b.ID as hist_id, b.* from (
-                 SELECT
-                        ORDER_ID,
-                        MAX(UPDATE_DATETIME) as upd_time
-                 FROM TP_ORDER_HISTORY
-                 GROUP BY ORDER_ID
-                ) as a,
-                TP_ORDER_HISTORY as b
-where b.ORDER_ID = a.ORDER_ID AND b.UPDATE_DATETIME = a.upd_time;
