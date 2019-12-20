@@ -28,7 +28,7 @@ create table TP_USER
     USER_NAME           VARCHAR(50) not null,
     FIRST_NAME          VARCHAR(128) not null,
     LAST_NAME           VARCHAR(128) not null,
-    PHONE_NUMBER        VARCHAR(12) not null,
+    PHONE_NUMBER        VARCHAR(20) not null,
     ENCRYTED_PASSWORD   VARCHAR(128) not null,
     ENABLED             BIT not null
 );
