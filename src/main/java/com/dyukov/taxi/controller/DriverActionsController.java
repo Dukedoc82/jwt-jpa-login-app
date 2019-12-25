@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 
 @Api(value = "Controller for driver actions. Access permitted for the users with driver and administrator roles only.",
         description = "Controller for driver actions. Access permitted for the users with driver and administrator roles only.")
@@ -52,7 +53,7 @@ public class DriverActionsController {
     })
     @RequestMapping(value = "/completeOrder/{id}", method = RequestMethod.PUT)
     public OrderDetailsDao completeOrder(@ApiParam(hidden = true)
-                                        @CookieValue(value = "userToken", defaultValue = "") String token,
+                                        @RequestHeader("usertoken") String token,
                                          @ApiParam(name = "id", value = "Order id to mark as the completed.")
                                         @PathVariable("id") Long orderId) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
@@ -67,13 +68,24 @@ public class DriverActionsController {
             @ApiResponse(code = 500, message = "Order #%d doesn't exist.", response = OrderNotFoundException.class),
             @ApiResponse(code = 500, message = "Order #%d is not assigned to you.", response = WrongStatusOrder.class)
     })
-    @RequestMapping(value = "/refuseOrder", method = RequestMethod.PUT)
+    @RequestMapping(value = "/refuseOrder/{id}", method = RequestMethod.PUT)
     public OrderDetailsDao refuseOrder(@ApiParam(hidden = true)
-                                      @CookieValue(value = "userToken", defaultValue = "") String token,
+                                      @RequestHeader("usertoken") String token,
                                        @ApiParam(name = "id", value = "Order id to refuse.")
                                       @PathVariable("id") Long orderId) {
         Long updaterId = tokenUtil.getUserIdFromToken(token);
         return orderService.refuseOrder(orderId, updaterId);
+    }
+
+    @ApiOperation(value = "Refuse orders specified by order ids assigned to the currently logged in user.")
+    @ApiResponse(code=200, message = "Success", response = OrderDetailsDao.class, responseContainer = "List")
+    @RequestMapping(value = "/refuseOrders", method = RequestMethod.PUT)
+    public Collection refuseOrders(@ApiParam(hidden = true)
+                                   @RequestHeader("usertoken") String token,
+                                   @ApiParam(value = "List of order ids to refuse.", required = true)
+                                           @RequestBody List<Long> orderIds) {
+        Long updaterId = tokenUtil.getUserIdFromToken(token);
+        return orderService.refuseOrders(orderIds, updaterId);
     }
 
     @ApiOperation(value = "List the orders assigned to the currently logged in user in any status.",
@@ -83,7 +95,7 @@ public class DriverActionsController {
     })
     @RequestMapping(value = "/myOrders", method = RequestMethod.GET)
     public Collection getDriverOrders(@ApiParam(hidden = true)
-                                          @CookieValue(value = "userToken", defaultValue = "") String token) {
+                                          @RequestHeader("usertoken") String token) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
         return orderService.getDriverOrders(driverId);
     }
@@ -95,7 +107,7 @@ public class DriverActionsController {
     })
     @RequestMapping(value = "/assignedOrders", method = RequestMethod.GET)
     public Collection getAssignedOrders(@ApiParam(hidden = true)
-                                            @CookieValue(value = "userToken", defaultValue = "") String token) {
+                                            @RequestHeader("usertoken") String token) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
         return orderService.getAssignedDriverOrders(driverId);
     }
@@ -107,7 +119,7 @@ public class DriverActionsController {
     })
     @RequestMapping(value = "/completedOrders", method = RequestMethod.GET)
     public Collection getCompletedOrders(@ApiParam(hidden = true)
-                                             @CookieValue(value = "userToken", defaultValue = "") String token) {
+                                             @RequestHeader("usertoken") String token) {
         Long driverId = tokenUtil.getUserIdFromToken(token);
         return orderService.getCompletedDriverOrders(driverId);
     }

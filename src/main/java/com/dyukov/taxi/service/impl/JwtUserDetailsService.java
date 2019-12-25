@@ -13,6 +13,7 @@ import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import com.dyukov.taxi.service.IUserDetailsService;
 import com.dyukov.taxi.utils.EncryptedPasswordUtils;
+import com.dyukov.taxi.utils.IValidationUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.modelmapper.ModelMapper;
@@ -37,6 +38,9 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private IValidationUtils validationUtils;
+
     @Override
     public TpUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         TpUser tpUser = userDetailsRepository.findUserAccount(username);
@@ -48,10 +52,13 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
 
         Collection roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
 
+
         List<GrantedAuthority> grantList = new ArrayList<>();
+        logger.info("Roles length: " + roleNames.size());
         if (roleNames != null) {
             for (Object role : roleNames) {
                 String roleName = (String) role;
+                logger.info("Found role name: " + roleName);
                 GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
                 grantList.add(authority);
             }
@@ -62,18 +69,21 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     }
 
     public UserDao save(RegistrationData registrationData) {
+        validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
         TpUser savedUser = userDetailsRepository.saveUser(tpUser);
         return convertToDTO(savedUser);
     }
 
     public UserDao saveAdmin(RegistrationData registrationData) {
+        validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
         TpUser savedUser = userDetailsRepository.saveAdmin(tpUser);
         return convertToDTO(savedUser);
     }
 
     public UserDao saveDriver(RegistrationData registrationData) {
+        validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
         TpUser savedUser = userDetailsRepository.saveDriver(tpUser);
         return convertToDTO(savedUser);

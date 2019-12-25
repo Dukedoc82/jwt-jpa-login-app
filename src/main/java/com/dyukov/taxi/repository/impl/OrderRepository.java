@@ -223,8 +223,7 @@ public class OrderRepository implements IOrderRepository {
             String sql = "Select e from " + OrderHistory.class.getName() + " e " +
                     "where e.driver.userId = :driverId and " +
                     "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
-                    "where r.driver.userId = e.driver.userId " +
-                    "and e.order.id = r.order.id) " +
+                    "where e.order.id = r.order.id) " +
                     "and e.status.titleKey = :status";
             Query query = entityManager.createQuery(sql);
             query.setParameter("driverId", driverId);

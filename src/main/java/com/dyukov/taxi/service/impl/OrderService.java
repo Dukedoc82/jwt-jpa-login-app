@@ -13,11 +13,14 @@ import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.service.IOrderService;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +34,8 @@ public class OrderService implements IOrderService {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    private Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
         TpUser client = userDetailsRepository.findUserAccount(updatedBy);
@@ -139,6 +144,19 @@ public class OrderService implements IOrderService {
     @Override
     public Collection getOpenedOrders() {
         return orderRepository.getOpenedOrders();
+    }
+
+    @Override
+    public Collection refuseOrders(List<Long> orderIds, Long updaterId) {
+        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
+        orderIds.forEach(orderId -> {
+            try {
+                updatedOrders.add(refuseOrder(orderId, updaterId));
+            } catch (WrongStatusOrder e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+        return updatedOrders;
     }
 
     private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {

@@ -49,7 +49,7 @@ public class OrderController {
             @ApiResponse(code = 401, message = "Unauthorized", response = HttpClientErrorException.Unauthorized.class)
     })
     @RequestMapping(value = "/{id}")
-    public OrderDetailsDao getOrderById(@ApiParam(hidden = true) @CookieValue(value = "userToken", defaultValue = "") String token,
+    public OrderDetailsDao getOrderById(@ApiParam(hidden = true) @RequestHeader("usertoken") String token,
                                         @ApiParam(value = "The id of the order to retrieve information about.")
                                        @PathVariable("id") Long orderId) {
         Long retrieverUserId = tokenUtil.getUserIdFromToken(token);

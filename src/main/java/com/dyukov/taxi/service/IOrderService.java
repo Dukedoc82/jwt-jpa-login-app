@@ -4,6 +4,7 @@ import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface IOrderService {
 
@@ -42,4 +43,6 @@ public interface IOrderService {
     Collection getCompletedUserOrders(Long userId);
 
     Collection getOpenedOrders();
+
+    Collection refuseOrders(List<Long> orderIds, Long updaterId);
 }
