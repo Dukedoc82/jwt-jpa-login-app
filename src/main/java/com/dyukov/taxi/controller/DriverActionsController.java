@@ -88,6 +88,28 @@ public class DriverActionsController {
         return orderService.refuseOrders(orderIds, updaterId);
     }
 
+    @ApiOperation(value = "Assign orders specified by order ids assigned to the currently logged in user.")
+    @ApiResponse(code=200, message = "Success", response = OrderDetailsDao.class, responseContainer = "List")
+    @RequestMapping(value = "/assignOrders", method = RequestMethod.PUT)
+    public Collection assignOrders(@ApiParam(hidden = true)
+                                   @RequestHeader("usertoken") String token,
+                                   @ApiParam(value = "List of order ids to assign.", required = true)
+                                   @RequestBody List<Long> orderIds) {
+        Long updaterId = tokenUtil.getUserIdFromToken(token);
+        return orderService.assignOrdersToDriver(orderIds, updaterId);
+    }
+
+    @ApiOperation(value = "Complete orders specified by order ids assigned to the currently logged in user.")
+    @ApiResponse(code=200, message = "Success", response = OrderDetailsDao.class, responseContainer = "List")
+    @RequestMapping(value = "/completeOrders", method = RequestMethod.PUT)
+    public Collection completeOrders(@ApiParam(hidden = true)
+                                   @RequestHeader("usertoken") String token,
+                                   @ApiParam(value = "List of order ids to complete.", required = true)
+                                   @RequestBody List<Long> orderIds) {
+        Long updaterId = tokenUtil.getUserIdFromToken(token);
+        return orderService.completeOrders(orderIds, updaterId);
+    }
+
     @ApiOperation(value = "List the orders assigned to the currently logged in user in any status.",
             httpMethod = "GET", response = OrderDetailsDao.class)
     @ApiResponses({

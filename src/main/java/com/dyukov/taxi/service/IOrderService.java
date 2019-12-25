@@ -45,4 +45,8 @@ public interface IOrderService {
     Collection getOpenedOrders();
 
     Collection refuseOrders(List<Long> orderIds, Long updaterId);
+
+    Collection assignOrdersToDriver(List<Long> orderIds, Long updaterId);
+
+    Collection completeOrders(List<Long> orderIds, Long updaterId);
 }

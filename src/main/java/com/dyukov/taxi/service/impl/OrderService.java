@@ -159,6 +159,32 @@ public class OrderService implements IOrderService {
         return updatedOrders;
     }
 
+    @Override
+    public Collection assignOrdersToDriver(List<Long> orderIds, Long updaterId) {
+        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
+        orderIds.forEach(orderId -> {
+            try {
+                updatedOrders.add(assignOrderToDriver(orderId, updaterId, updaterId));
+            } catch (WrongStatusOrder e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+        return updatedOrders;
+    }
+
+    @Override
+    public Collection completeOrders(List<Long> orderIds, Long updaterId) {
+        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
+        orderIds.forEach(orderId -> {
+            try {
+                updatedOrders.add(completeOrder(orderId, updaterId));
+            } catch (WrongStatusOrder e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+        return updatedOrders;
+    }
+
     private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }
