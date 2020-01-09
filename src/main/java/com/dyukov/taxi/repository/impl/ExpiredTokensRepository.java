@@ -58,7 +58,8 @@ public class ExpiredTokensRepository implements IExpiredTokensRepository {
             cal.setTime(new Date());
             cal.add(Calendar.DAY_OF_YEAR, -1);
             query.setParameter("clearBefore", cal.getTime());
-            query.executeUpdate();
+            int rowsCount = query.executeUpdate();
+            logger.info(rowsCount + " tokens removed from the outdated tokens black list.");
         } catch (Exception e) {
             logger.error(e.getLocalizedMessage(), e);
         }
