@@ -8,4 +8,6 @@ public interface IExpiredTokensRepository {
 
     ExpiredToken getFromBlackList(String token);
 
+    void clearOutdatedExpiredTokens();
+
 }

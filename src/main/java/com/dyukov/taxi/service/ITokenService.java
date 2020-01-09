@@ -7,4 +7,6 @@ public interface ITokenService {
     ExpiredToken addTokenToBlackList(String token);
 
     ExpiredToken getTokenFromBlacklist(String token);
+
+    void clearOutdatedTokensFromBlacklist();
 }

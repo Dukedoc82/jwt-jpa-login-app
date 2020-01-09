@@ -21,4 +21,9 @@ public class TokenService implements ITokenService {
     public ExpiredToken getTokenFromBlacklist(String token) {
         return tokensRepository.getFromBlackList(token);
     }
+
+    @Override
+    public void clearOutdatedTokensFromBlacklist() {
+        tokensRepository.clearOutdatedExpiredTokens();
+    }
 }
