@@ -14,7 +14,7 @@ public abstract class TaxiServiceException extends RuntimeException {
     public static final String WRONG_ASSIGNMENT_ORDER_STATUS =
             "Cannot assign cancelled or completed order. Order #%d is %s.";
     public static final String WRONG_CANCELLATION_ORDER_STATUS =
-            "Cannot cancel cancelled or assigned order. Order #%d is %s.";
+            "Cannot cancel cancelled or completed order. Order #%d is %s.";
     static final String USER_ID_DOES_NOT_EXIST = "User #%d doesn't exist.";
 
 }

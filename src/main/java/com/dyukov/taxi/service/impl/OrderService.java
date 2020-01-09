@@ -139,7 +139,12 @@ public class OrderService implements IOrderService {
 
     @Override
     public Collection getOpenedOrders() {
-        return orderRepository.getOpenedOrders();
+        Collection<OrderHistory> orders = orderRepository.getOpenedOrders();
+        orders.forEach(orderHistory -> {
+            TpOrder order = orderHistory.getOrder();
+            order.getClient().setPhoneNumber(null);
+        });
+        return orders;
     }
 
     @Override
