@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <style>
+        .mailHeader {
+            color: #fff;
+            background-color: #3f51b5;
+            width: 100%;
+            position: static;
+            transform: translateZ(0);
+            display: flex;
+            z-index: 1100;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            flex-direction: column;
+        }
+
+        h6 {
+            color: #fff;
+            margin: 1em;
+        }
+
+        .typography {
+            font-size: 1.25rem;
+            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+            font-weight: 500;
+            line-height: 1.6;
+            letter-spacing: 0.0075em;
+        }
+
+        .title {
+            flex-grow: 1;
+        }
+
+        .tableCell {
+            line-height: 1.5rem;
+            display: table-cell;
+            font-size: 0.875rem;
+            text-align: left;
+            font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+            letter-spacing: 0.01071em;
+        }
+
+        .tableCell td div {
+            padding: 16px;
+        }
+
+        .tableCellTitle {
+            font-weight: bold;
+        }
+        .centeredDiv {
+            width: fit-content;
+            margin: 2em;
+            padding: 2em;
+            border-radius: 4px;
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+<header th:insert="generalTemplate.html::header(titleText=${headerTitle})">
+    <div class="mailHeader">
+        <h6 class="typography title" th:text="Title text">
+        </h6>
+    </div>
+</header>
+<table width="100%" border="0" cellspacing="0" cellpadding="2em">
+    <tr>
+        <td align="center">
+            <div class="centeredDiv">
+                <div>
+                    <table class="tableCell">
+                        <tr>
+                            <td align="left" class="tableCellTitle">
+                                    Address From:
+                            </td>
+                            <td align="left">
+                                <span>Гоголя стрит</span>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

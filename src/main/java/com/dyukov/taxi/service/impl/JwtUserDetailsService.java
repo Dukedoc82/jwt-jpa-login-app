@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.entity.ActivationToken;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.model.TpUserDetails;
+import com.dyukov.taxi.repository.IActivationTokenRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import com.dyukov.taxi.service.IUserDetailsService;
@@ -41,6 +43,9 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     @Autowired
     private IValidationUtils validationUtils;
 
+    @Autowired
+    private IActivationTokenRepository activationTokenRepository;
+
     @Override
     public TpUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         TpUser tpUser = userDetailsRepository.findUserAccount(username);
@@ -71,6 +76,7 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     public UserDao save(RegistrationData registrationData) {
         validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
+        tpUser.setEnabled(false);
         TpUser savedUser = userDetailsRepository.saveUser(tpUser);
         return convertToDTO(savedUser);
     }
@@ -85,8 +91,13 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     public UserDao saveDriver(RegistrationData registrationData) {
         validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
+        tpUser.setEnabled(false);
         TpUser savedUser = userDetailsRepository.saveDriver(tpUser);
         return convertToDTO(savedUser);
+    }
+
+    public UserDao activateUser(String activationToken) {
+        return null;
     }
 
     public Collection findAll() {

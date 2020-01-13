@@ -124,6 +124,19 @@ alter table TP_TOKEN_BLACKLIST
 
 go;
 
+create table TP_ACTIVATION_TOKEN(
+    ID                  BIGINT not null IDENTITY(1, 1),
+    USER_ID             BIGINT not null,
+    TOKEN_VALUE         VARCHAR(max),
+    EXPIRE_DATETIME     DATETIME not null
+);
+
+alter table TP_ACTIVATION_TOKEN
+    add constraint TP_ACTIVATION_TOKEN_PK primary key (ID);
+alter table TP_ACTIVATION_TOKEN
+    add constraint TP_ACTIVATION_TOKEN_USER_FK foreign key (USER_ID)
+        references TP_USER(USER_ID);
+
 SET IDENTITY_INSERT TP_User ON
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)

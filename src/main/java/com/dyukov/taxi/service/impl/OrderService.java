@@ -11,6 +11,7 @@ import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.exception.WrongStatusOrder;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.service.IMailService;
 import com.dyukov.taxi.service.IOrderService;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
@@ -35,11 +36,16 @@ public class OrderService implements IOrderService {
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private IMailService mailService;
+
     private Logger logger = LoggerFactory.getLogger(OrderService.class);
 
     public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
         TpUser client = userDetailsRepository.findUserAccount(updatedBy);
-        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), client));
+        OrderDetailsDao newOrder = convertToDto(orderRepository.createOrder(convertFromDto(orderDao), client));
+        mailService.sendNewOrderNotification(client.getUserName(), newOrder);
+        return newOrder;
     }
 
     public OrderDetailsDao getOrderById(Long id, Long retrieverUserId) {
