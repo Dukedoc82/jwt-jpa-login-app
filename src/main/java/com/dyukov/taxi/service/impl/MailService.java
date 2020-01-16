@@ -20,6 +20,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Collection;
+
 @Service
 @PropertySource("classpath:message.properties")
 public class MailService implements IMailService {
@@ -80,6 +82,26 @@ public class MailService implements IMailService {
         } catch (MailException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    @Override
+    public void sendCancelOrderNotification(Collection<String> recipients, OrderDetailsDao order) {
+        Context context = mailBuilder.getCancelledOrderContext(order);
+        recipients.forEach(recipient -> {
+            MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, context,
+                    "orderDetailsTemplate", "Order Cancelled", true);
+            try {
+                TpUser user = userDetailsRepository.findUserAccount(recipient);
+                UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
+                if (settings.getNewOrder()) {
+                    mailSender.send(messagePreparator);
+                }
+            } catch (MailException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
+        });
+
+
     }
 
     @Override

@@ -39,12 +39,27 @@ public class MailBuilder implements IMailBuilder {
 
     @Override
     public Context getNewOrderContext(OrderDetailsDao order) {
+        return getOrderUpdateContext(order, "New Order");
+    }
+
+    @Override
+    public Context getCancelledOrderContext(OrderDetailsDao order) {
+        return getOrderUpdateContext(order, "Order cancelled");
+    }
+
+
+
+    private Context getOrderUpdateContext(OrderDetailsDao order, String title) {
         Context context = new Context();
+        fillOrderDetails(order, context);
+        context.setVariable("headerTitle", title);
+        return context;
+    }
+
+    private void fillOrderDetails(OrderDetailsDao order, Context context) {
         context.setVariable("addressFrom", order.getOrder().getAddressFrom());
         context.setVariable("addressTo", order.getOrder().getAddressTo());
         context.setVariable("appointmentTime", order.getOrder().getAppointmentDate());
         context.setVariable("clientName", order.getOrder().getClient().getFirstName() + " " + order.getOrder().getClient().getLastName());
-        context.setVariable("headerTitle", "New Order");
-        return context;
     }
 }

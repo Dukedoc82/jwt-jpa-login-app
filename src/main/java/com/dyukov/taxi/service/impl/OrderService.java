@@ -71,8 +71,15 @@ public class OrderService implements IOrderService {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderCancellation(retriever, orderHistory);
+        List<String> recipients = new ArrayList<>();
+        recipients.add(orderHistory.getOrder().getClient().getUserName());
+        if (orderHistory.getDriver() != null && !recipients.contains(orderHistory.getDriver().getUserName())) {
+            recipients.add(orderHistory.getDriver().getUserName());
+        }
         OrderHistory newRec = new OrderHistory(orderHistory.getOrder(), orderHistory.getDriver(), retriever);
-        return convertToDto(orderRepository.cancelOrder(newRec));
+        OrderDetailsDao updatedOrder = convertToDto(orderRepository.cancelOrder(newRec));
+        mailService.sendCancelOrderNotification(recipients, updatedOrder);
+        return updatedOrder;
     }
 
     public OrderDetailsDao completeOrder(Long orderId, Long driverId) {

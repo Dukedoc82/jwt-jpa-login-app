@@ -11,6 +11,8 @@ public interface IMailBuilder {
 
     Context getNewOrderContext(OrderDetailsDao order);
 
+    Context getCancelledOrderContext(OrderDetailsDao order);
+
     MimeMessagePreparator getMimeMessagePreparator(String recipient, String body, String subject);
 
 }
