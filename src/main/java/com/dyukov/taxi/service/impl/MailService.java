@@ -93,7 +93,7 @@ public class MailService implements IMailService {
             try {
                 TpUser user = userDetailsRepository.findUserAccount(recipient);
                 UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
-                if (settings.getNewOrder()) {
+                if (settings.getCancelOrder()) {
                     mailSender.send(messagePreparator);
                 }
             } catch (MailException e) {
