@@ -18,6 +18,8 @@ public interface IUserDetailsRepository {
 
     TpUser saveDriver(TpUser tpUser);
 
+    TpUser updateUser(TpUser tpUser);
+
     Collection findDrivers();
 
     Collection findAdmins();

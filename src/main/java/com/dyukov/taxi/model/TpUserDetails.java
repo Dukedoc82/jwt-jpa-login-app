@@ -1,6 +1,6 @@
 package com.dyukov.taxi.model;
 
-import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.entity.TpUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
@@ -8,18 +8,18 @@ import java.util.Collection;
 
 public class TpUserDetails extends User {
 
-    private UserDao user;
+    private TpUser user;
 
-    public TpUserDetails(UserDao user, String username, String password, Collection<? extends GrantedAuthority> authorities) {
-        super(username, password, authorities);
+    public TpUserDetails(TpUser user, String username, String password, Collection<? extends GrantedAuthority> authorities) {
+        super(username, password, user.isEnabled(), true, true, true, authorities);
         this.user = user;
     }
 
-    public UserDao getUser() {
+    public TpUser getUser() {
         return user;
     }
 
-    public void setUser(UserDao user) {
+    public void setUser(TpUser user) {
         this.user = user;
     }
 

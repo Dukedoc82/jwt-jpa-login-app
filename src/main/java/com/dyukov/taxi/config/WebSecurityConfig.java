@@ -32,7 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             "/webjars/**",
             "/authenticate",
             "/register",
-            "/registerAsADriver"
+            "/registerAsADriver",
+            "/confirm/**"
     };
 
     @Autowired
@@ -73,7 +74,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         hasAuthority("ROLE_ADMIN").
                 antMatchers("/driver/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_DRIVER").
-                antMatchers("/hello", "/order/**").
+                antMatchers("/hello", "/order/**", "/mailService/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_USER", "ROLE_DRIVER").
                 anyRequest().authenticated().
 

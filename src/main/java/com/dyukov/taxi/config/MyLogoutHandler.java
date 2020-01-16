@@ -12,8 +12,6 @@ public class MyLogoutHandler implements LogoutHandler {    @Override
         Enumeration<String> headerNames = request.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String key = (String) headerNames.nextElement();
-            System.out.println("Key: " + key);
-            System.out.println("Value: " + request.getHeader(key));
         }
     }
 }

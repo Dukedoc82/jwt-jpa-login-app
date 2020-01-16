@@ -1,7 +1,10 @@
 IF EXISTS(select * from sys.views WHERE NAME = 'current_status_orders_view')
     DROP VIEW current_status_orders_view;
 GO;
-
+if OBJECT_ID('dbo.TP_USER_MAIL_SETTINGS', 'U') is not null
+    drop table TP_USER_MAIL_SETTINGS;
+if OBJECT_ID('dbo.TP_ACTIVATION_TOKEN', 'U') is not null
+    drop table TP_ACTIVATION_TOKEN;
 if OBJECT_ID('dbo.TP_TOKEN_BLACKLIST', 'U') is not null
     drop table TP_TOKEN_BLACKLIST;
 if OBJECT_ID('dbo.TP_ORDER_HISTORY', 'U') is not null
@@ -135,6 +138,22 @@ alter table TP_ACTIVATION_TOKEN
     add constraint TP_ACTIVATION_TOKEN_PK primary key (ID);
 alter table TP_ACTIVATION_TOKEN
     add constraint TP_ACTIVATION_TOKEN_USER_FK foreign key (USER_ID)
+        references TP_USER(USER_ID);
+
+create table TP_USER_MAIL_SETTINGS(
+    ID BIGINT not null IDENTITY(1, 1),
+    USER_ID BIGINT not null,
+    NEW_ORDER BIT not null,
+    ASSIGN_ORDER BIT not null,
+    CANCEL_ORDER BIT not null,
+    COMPLETE_ORDER BIT not null,
+    REFUSE_ORDER BIT not null
+);
+
+alter table TP_USER_MAIL_SETTINGS
+    add constraint TP_USER_MAIL_SETTINGS_PK primary key (ID);
+alter table TP_USER_MAIL_SETTINGS
+    add constraint TP_USER_MAIL_SETTINGS_USER_FK foreign key (USER_ID)
         references TP_USER(USER_ID);
 
 SET IDENTITY_INSERT TP_User ON

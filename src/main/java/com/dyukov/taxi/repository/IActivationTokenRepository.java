@@ -10,4 +10,6 @@ public interface IActivationTokenRepository {
     ActivationToken findToken(String tokenValue);
 
     int deleteToken(String tokenValue);
+
+    int deleteOutdatedTokens();
 }

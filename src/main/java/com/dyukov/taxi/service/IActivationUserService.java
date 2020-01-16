@@ -4,5 +4,10 @@ import com.dyukov.taxi.dao.UserDao;
 
 public interface IActivationUserService {
 
-    public void generateActivationToken(UserDao userDao);
+    void generateActivationToken(UserDao userDao);
+
+    UserDao activateUser(String activationToken);
+
+    int deleteExpiredActivationTokens();
+
 }

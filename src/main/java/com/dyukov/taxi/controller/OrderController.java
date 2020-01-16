@@ -9,12 +9,9 @@ import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.exception.WrongStatusOrder;
 import com.dyukov.taxi.service.IOrderService;
 import io.swagger.annotations.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Collection;
 
@@ -23,8 +20,6 @@ import java.util.Collection;
 @Api(value = "The controller which handles different types of actions with orders",
         description = "The controller which handles different types of actions with orders")
 public class OrderController {
-
-    private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @Autowired
     private JwtTokenUtil tokenUtil;
@@ -41,10 +36,7 @@ public class OrderController {
     public OrderDetailsDao createOrder(@ApiParam(value = "Token value of the logged in user. Cookie param.", required = true)
                                         @RequestHeader("usertoken") String token,
                                        @ApiParam(value = "Order details to persist.", required = true)
-                                        @RequestBody OrderDao order,
-                                       UriComponentsBuilder builder) {
-        logger.info("----------------------------------------------------------------");
-        logger.info(builder.toUriString());
+                                        @RequestBody OrderDao order) {
         addUserData(token, order);
         return orderService.createOrder(order, tokenUtil.getUserIdFromToken(token));
     }

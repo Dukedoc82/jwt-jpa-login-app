@@ -5,14 +5,17 @@ import com.dyukov.taxi.entity.UserRole;
 import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.repository.IUserMailSettingsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PreDestroy;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -30,6 +33,9 @@ public class UserDetailsRepository implements IUserDetailsRepository {
 
     @Autowired
     private IUserRoleRepository userRoleRepository;
+
+    @Autowired
+    private IUserMailSettingsRepository userMailSettingsRepository;
 
     @Cacheable("users")
     public TpUser findUserAccount(String userName) {
@@ -78,23 +84,36 @@ public class UserDetailsRepository implements IUserDetailsRepository {
         }
     }
 
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
     public TpUser saveUser(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveUserRole(tpUser);
+        userMailSettingsRepository.persistNewUserSettings(tpUser);
         entityManager.flush();
         return tpUser;
     }
 
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
+    public TpUser updateUser(TpUser tpUser) {
+        entityManager.persist(tpUser);
+        entityManager.flush();
+        return tpUser;
+    }
+
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
     public TpUser saveAdmin(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveAdminRole(tpUser);
+        userMailSettingsRepository.persistNewUserSettings(tpUser);
         entityManager.flush();
         return tpUser;
     }
 
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
     public TpUser saveDriver(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveDriverRole(tpUser);
+        userMailSettingsRepository.persistNewUserSettings(tpUser);
         entityManager.flush();
         return tpUser;
     }
@@ -125,5 +144,11 @@ public class UserDetailsRepository implements IUserDetailsRepository {
         } catch (NoResultException e) {
             return new ArrayList();
         }
+    }
+
+    @PreDestroy
+    @CacheEvict(cacheNames = "users", allEntries = true)
+    public void preDestroy() {
+
     }
 }

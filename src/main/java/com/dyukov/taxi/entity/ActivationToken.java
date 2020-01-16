@@ -20,14 +20,14 @@ public class ActivationToken {
     private TpUser user;
 
     @Column
-    private Date expirationDateTime;
+    private Date expireDatetime;
 
     public ActivationToken() {
         super();
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         cal.add(Calendar.DAY_OF_YEAR, 1);
-        expirationDateTime = cal.getTime();
+        expireDatetime = cal.getTime();
     }
 
     public ActivationToken(String tokenValue, TpUser user) {
@@ -65,11 +65,11 @@ public class ActivationToken {
         this.user = user;
     }
 
-    public Date getExpirationDateTime() {
-        return expirationDateTime;
+    public Date getExpireDatetime() {
+        return expireDatetime;
     }
 
-    public void setExpirationDateTime(Date expirationDateTime) {
-        this.expirationDateTime = expirationDateTime;
+    public void setExpireDatetime(Date expireDatetime) {
+        this.expireDatetime = expireDatetime;
     }
 }
