@@ -13,6 +13,7 @@ import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.service.IMailService;
 import com.dyukov.taxi.service.IOrderService;
+import com.dyukov.taxi.service.context.ContextAction;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,8 +44,10 @@ public class OrderService implements IOrderService {
 
     public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
         TpUser client = userDetailsRepository.findUserAccount(updatedBy);
-        OrderDetailsDao newOrder = convertToDto(orderRepository.createOrder(convertFromDto(orderDao), client));
-        mailService.sendNewOrderNotification(client.getUserName(), newOrder);
+        OrderHistory order = orderRepository.createOrder(convertFromDto(orderDao), client);
+        OrderDetailsDao newOrder = convertToDto(order);
+        Collection<String> recipients = getClientAndAllDrivers(order);
+        mailService.sendOrderUpdateNotification(recipients, newOrder, ContextAction.NEW);
         return newOrder;
     }
 
@@ -64,21 +67,21 @@ public class OrderService implements IOrderService {
         validateOrderAssignment(orderHistory, driverId);
         TpUser driver = userDetailsRepository.findUserAccount(driverId);
         TpUser updater = userDetailsRepository.findUserAccount(updatedBy);
-        return convertToDto(orderRepository.assignOrderToDriver(orderHistory, driver, updater));
+        OrderHistory assignedOrder = orderRepository.assignOrderToDriver(orderHistory, driver, updater);
+        Collection<String> recipients = getNotificationRecipients(assignedOrder);
+        OrderDetailsDao assignedOrderDao = convertToDto(assignedOrder);
+        mailService.sendOrderUpdateNotification(recipients, assignedOrderDao, ContextAction.ASSIGN);
+        return assignedOrderDao;
     }
 
     public OrderDetailsDao cancelOrder(Long orderId, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderCancellation(retriever, orderHistory);
-        List<String> recipients = new ArrayList<>();
-        recipients.add(orderHistory.getOrder().getClient().getUserName());
-        if (orderHistory.getDriver() != null && !recipients.contains(orderHistory.getDriver().getUserName())) {
-            recipients.add(orderHistory.getDriver().getUserName());
-        }
+        List<String> recipients = getNotificationRecipients(orderHistory);
         OrderHistory newRec = new OrderHistory(orderHistory.getOrder(), orderHistory.getDriver(), retriever);
         OrderDetailsDao updatedOrder = convertToDto(orderRepository.cancelOrder(newRec));
-        mailService.sendCancelOrderNotification(recipients, updatedOrder);
+        mailService.sendOrderUpdateNotification(recipients, updatedOrder, ContextAction.CANCEL);
         return updatedOrder;
     }
 
@@ -87,7 +90,11 @@ public class OrderService implements IOrderService {
         validateOrderCompletion(orderDetails, driverId);
         OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), orderDetails.getDriver(),
                 userDetailsRepository.findUserAccount(driverId));
-        return convertToDto(orderRepository.completeOrder(newRecord));
+        OrderHistory completedOrder = orderRepository.completeOrder(newRecord);
+        OrderDetailsDao completedOrderDao = convertToDto(completedOrder);
+        List<String> recipients = getNotificationRecipients(completedOrder);
+        mailService.sendOrderUpdateNotification(recipients, completedOrderDao, ContextAction.COMPLETE);
+        return completedOrderDao;
     }
 
     public OrderDetailsDao refuseOrder(Long id, Long updaterId) {
@@ -95,7 +102,10 @@ public class OrderService implements IOrderService {
         TpUser updater = userDetailsRepository.findUserAccount(updaterId);
         validateOrderRefusal(orderDetails, updater);
         OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), null, updater);
-        return convertToDto(orderRepository.refuseOrder(newRecord));
+        Collection<String> recipients = getClientAndAllDrivers(orderDetails);
+        OrderDetailsDao refusedOrder = convertToDto(orderRepository.refuseOrder(newRecord));
+        mailService.sendOrderUpdateNotification(recipients, refusedOrder, ContextAction.REFUSE);
+        return refusedOrder;
     }
 
     public Collection getActualUserOrders(Long userId) {
@@ -282,5 +292,23 @@ public class OrderService implements IOrderService {
 
     private boolean isAdmin(TpUser user) {
         return user.getRoleNames().contains("ROLE_ADMIN");
+    }
+
+    private List<String> getNotificationRecipients(OrderHistory orderHistory) {
+        List<String> recipients = new ArrayList<>();
+        recipients.add(orderHistory.getOrder().getClient().getUserName());
+        if (orderHistory.getDriver() != null && !recipients.contains(orderHistory.getDriver().getUserName())) {
+            recipients.add(orderHistory.getDriver().getUserName());
+        }
+        return recipients;
+    }
+
+    private Collection<String> getClientAndAllDrivers(OrderHistory orderDetails) {
+        Collection<String> recipients = new ArrayList<>();
+        recipients.add(orderDetails.getOrder().getClient().getUserName());
+        userDetailsRepository.findDrivers().forEach(driver -> {
+            recipients.add(((TpUser) driver).getUserName());
+        });
+        return recipients;
     }
 }

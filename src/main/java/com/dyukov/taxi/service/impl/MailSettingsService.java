@@ -45,6 +45,12 @@ public class MailSettingsService implements IMailSettingsService {
         return convertToDTO(mailSettingsRepository.updateSettings(currentSettings));
     }
 
+    @Override
+    public MailSettingsDao getSettings(Long userId) {
+        TpUser user = userDetailsRepository.findUserAccount(userId);
+        return convertToDTO(mailSettingsRepository.getSettingsByUser(user));
+    }
+
     private MailSettingsDao convertToDTO(UserMailSettings mailSettings) {
         MailSettingsDao mailSettingsDao = modelMapper.map(mailSettings, MailSettingsDao.class);
         mailSettingsDao.setGetAssignOrderNotifications(mailSettings.getAssignOrder());

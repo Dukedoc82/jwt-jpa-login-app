@@ -6,6 +6,7 @@ import com.dyukov.taxi.entity.UserMailSettings;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserMailSettingsRepository;
 import com.dyukov.taxi.service.IMailService;
+import com.dyukov.taxi.service.context.ContextAction;
 import com.dyukov.taxi.utils.IMailBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,42 +70,6 @@ public class MailService implements IMailService {
     }
 
     @Override
-    public void sendNewOrderNotification(String recipient, OrderDetailsDao order) {
-        Context context = mailBuilder.getNewOrderContext(order);
-        MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, context,
-                "orderDetailsTemplate", "New order", true);
-        try {
-            TpUser user = userDetailsRepository.findUserAccount(recipient);
-            UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
-            if (settings.getNewOrder()) {
-                mailSender.send(messagePreparator);
-            }
-        } catch (MailException e) {
-            logger.error(e.getLocalizedMessage(), e);
-        }
-    }
-
-    @Override
-    public void sendCancelOrderNotification(Collection<String> recipients, OrderDetailsDao order) {
-        Context context = mailBuilder.getCancelledOrderContext(order);
-        recipients.forEach(recipient -> {
-            MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, context,
-                    "orderDetailsTemplate", "Order Cancelled", true);
-            try {
-                TpUser user = userDetailsRepository.findUserAccount(recipient);
-                UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
-                if (settings.getCancelOrder()) {
-                    mailSender.send(messagePreparator);
-                }
-            } catch (MailException e) {
-                logger.error(e.getLocalizedMessage(), e);
-            }
-        });
-
-
-    }
-
-    @Override
     public void sendRegistrationConfirmationEmail(String recipient, String confirmToken) {
         String link = mailAddress + "/confirm/" + confirmToken;
         String body = String.format(registerConfirmBody, link);
@@ -115,5 +80,24 @@ public class MailService implements IMailService {
         } catch (MailException e) {
             logger.error(e.getLocalizedMessage(), e);
         }
+    }
+
+    @Override
+    public void sendOrderUpdateNotification(Collection<String> recipients, OrderDetailsDao order, ContextAction action) {
+        Context context = action.getContext(order);
+
+        recipients.forEach(recipient -> {
+            MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, context,
+                    "orderDetailsTemplate", action.getSubject(), true);
+            try {
+                TpUser user = userDetailsRepository.findUserAccount(recipient);
+                UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
+                if (action.sendUpdate(settings)) {
+                    mailSender.send(messagePreparator);
+                }
+            } catch (MailException e) {
+                logger.error(e.getLocalizedMessage(), e);
+            }
+        });
     }
 }

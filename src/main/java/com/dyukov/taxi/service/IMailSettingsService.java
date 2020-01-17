@@ -5,4 +5,6 @@ import com.dyukov.taxi.dao.MailSettingsDao;
 public interface IMailSettingsService {
 
     MailSettingsDao updateSettings(Long userId, MailSettingsDao mailSettingsDao);
+
+    MailSettingsDao getSettings(Long userId);
 }
