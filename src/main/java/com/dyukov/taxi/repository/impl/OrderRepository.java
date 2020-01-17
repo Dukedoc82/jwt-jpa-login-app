@@ -5,9 +5,12 @@ import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.exception.OrderNotFoundException;
+import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.repository.IOrderHistoryRepository;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IOrderStatusRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
@@ -23,6 +26,10 @@ import java.util.Collection;
 @Repository
 @Transactional
 public class OrderRepository implements IOrderRepository {
+
+    private static final String NO_ORDERS_FOUND_MESSAGE = "No orders found";
+
+    private Logger logger = LoggerFactory.getLogger(OrderRepository.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -42,6 +49,7 @@ public class OrderRepository implements IOrderRepository {
             Query query = entityManager.createQuery(sql);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList<>();
         }
     }
@@ -57,6 +65,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("userId", retrieverUserId);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList<>();
         }
     }
@@ -73,6 +82,7 @@ public class OrderRepository implements IOrderRepository {
             query.setMaxResults(1);
             return (OrderHistory) query.getSingleResult();
         } catch (NoResultException e) {
+            logger.error(String.format(TaxiServiceException.ORDER_DOES_NOT_EXIST, id), e);
             throw new OrderNotFoundException(id, e);
         }
     }
@@ -88,6 +98,7 @@ public class OrderRepository implements IOrderRepository {
             query.setMaxResults(1);
             return (OrderHistory) query.getSingleResult();
         } catch (NoResultException e) {
+            logger.error(String.format(TaxiServiceException.ORDER_DOES_NOT_EXIST, id), e);
             throw new OrderNotFoundException(id, e);
         }
     }
@@ -117,13 +128,8 @@ public class OrderRepository implements IOrderRepository {
         return updateOrderStatus(orderHistory, OrderStatuses.COMPLETED);
     }
 
-    public OrderHistory refuseOrder(OrderHistory orderDetails, TpUser updatedBy) {
-        OrderHistory orderHistory = new OrderHistory(orderDetails.getOrder(),
-                orderStatusRepository.getStatusByKey(OrderStatuses.OPENED),
-                null, updatedBy);
-        entityManager.persist(orderHistory);
-        entityManager.flush();
-        return orderHistory;
+    public OrderHistory refuseOrder(OrderHistory orderDetails) {
+        return updateOrderStatus(orderDetails, OrderStatuses.OPENED);
     }
 
     @Override
@@ -138,6 +144,7 @@ public class OrderRepository implements IOrderRepository {
             query.setParameter("driverId", driverId);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.error(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
     }
@@ -157,19 +164,73 @@ public class OrderRepository implements IOrderRepository {
         return getDriverOrdersByStatus(driverId, OrderStatuses.CANCELED);
     }
 
+    @Override
+    public Collection getOpenedUserOrders(Long userId) {
+        return getUserOrdersByStatus(userId, OrderStatuses.OPENED);
+    }
+
+    @Override
+    public Collection getAssignedUserOrders(Long userId) {
+        return getUserOrdersByStatus(userId, OrderStatuses.ASSIGNED);
+    }
+
+    @Override
+    public Collection getCancelledUserOrders(Long userId) {
+        return getUserOrdersByStatus(userId, OrderStatuses.CANCELED);
+    }
+
+    @Override
+    public Collection getCompletedUserOrders(Long userId) {
+        return getUserOrdersByStatus(userId, OrderStatuses.COMPLETED);
+    }
+
+    @Override
+    public Collection getOpenedOrders() {
+        try {
+            String sql = "select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where e.order.id = r.order.id) " +
+                    "and e.status.titleKey = :status";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("status", OrderStatuses.OPENED);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
+            return new ArrayList();
+        }
+    }
+
+    private Collection getUserOrdersByStatus(Long userId, String status) {
+        try {
+            String sql = "Select e from " + OrderHistory.class.getName() + " e " +
+                    "where e.order.client.userId = :userId and " +
+                    "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where r.order.client.userId = e.order.client.userId " +
+                    "and e.order.id = r.order.id) " +
+                    "and e.status.titleKey = :status";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("userId", userId);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
+            return new ArrayList();
+        }
+    }
+
     private Collection getDriverOrdersByStatus(Long driverId, String status) {
         try {
             String sql = "Select e from " + OrderHistory.class.getName() + " e " +
                     "where e.driver.userId = :driverId and " +
                     "e.updatedOn = (select max(r.updatedOn) from " + OrderHistory.class.getName() + " r " +
-                    "where r.driver.userId = e.driver.userId " +
-                    "and e.order.id = r.order.id) " +
+                    "where e.order.id = r.order.id) " +
                     "and e.status.titleKey = :status";
             Query query = entityManager.createQuery(sql);
             query.setParameter("driverId", driverId);
             query.setParameter("status", status);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
     }

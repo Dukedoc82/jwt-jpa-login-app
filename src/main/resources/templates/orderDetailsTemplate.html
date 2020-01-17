@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="generalTemplate.html::headerfiles"/>
+    <style>
+        .centeredDiv {
+            width: fit-content;
+            margin: 2em;
+            padding: 1em;
+            border-radius: 4px;
+            background-color: #ddd;
+        }
+    </style>
+</head>
+    <body>
+    <header th:insert="generalTemplate.html::header(titleText=${headerTitle})"> </header>
+    <table width="100%" border="0" cellspacing="0" cellpadding="2em">
+        <tr>
+            <td align="center">
+                <div class="centeredDiv">
+                    <div th:if="${!#strings.isEmpty(clientName)} != ''" th:insert="generalTemplate.html::clientOrderDetails(fromAddress=${addressFrom},
+                            toAddress=${addressTo}, appointmentTime=${appointmentTime}, clientName=${clientName})">
+                    </div>
+                    <div th:if="${!#strings.isEmpty(drvmessage)}">
+                        <div th:insert="generalTemplate.html::clientOrderDetails(fromAddress=${drvmessage})">
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    </body>
+</html>

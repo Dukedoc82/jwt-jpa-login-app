@@ -1,7 +1,7 @@
 package com.dyukov.taxi.service.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
-import com.dyukov.taxi.dao.HistoryRec;
+import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
@@ -11,13 +11,18 @@ import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.exception.WrongStatusOrder;
 import com.dyukov.taxi.repository.IOrderRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.service.IMailService;
 import com.dyukov.taxi.service.IOrderService;
+import com.dyukov.taxi.service.context.ContextAction;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,54 +37,79 @@ public class OrderService implements IOrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    public HistoryRec createOrder(OrderDao orderDao, Long updatedBy) {
+    @Autowired
+    private IMailService mailService;
+
+    private Logger logger = LoggerFactory.getLogger(OrderService.class);
+
+    public OrderDetailsDao createOrder(OrderDao orderDao, Long updatedBy) {
         TpUser client = userDetailsRepository.findUserAccount(updatedBy);
-        return convertToDto(orderRepository.createOrder(convertFromDto(orderDao), client));
+        OrderHistory order = orderRepository.createOrder(convertFromDto(orderDao), client);
+        OrderDetailsDao newOrder = convertToDto(order);
+        Collection<String> recipients = getClientAndAllDrivers(order);
+        mailService.sendOrderUpdateNotification(recipients, newOrder, ContextAction.NEW);
+        return newOrder;
     }
 
-    public HistoryRec getOrderById(Long id, Long retrieverUserId) {
+    public OrderDetailsDao getOrderById(Long id, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
-            OrderHistory order = orderRepository.getById(id, retrieverUserId);
-            validateOrder(order, retriever);
-            return convertToDto(orderRepository.getById(id, retrieverUserId));
+        OrderHistory order = orderRepository.getById(id, retrieverUserId);
+        validateOrder(order, retriever);
+        return convertToDto(orderRepository.getById(id, retrieverUserId));
     }
 
     public Collection getActualOrders() {
         return convertToDto(orderRepository.getAll());
     }
 
-    public HistoryRec assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
+    public OrderDetailsDao assignOrderToDriver(Long orderId, Long driverId, Long updatedBy) {
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderAssignment(orderHistory, driverId);
         TpUser driver = userDetailsRepository.findUserAccount(driverId);
         TpUser updater = userDetailsRepository.findUserAccount(updatedBy);
-        return convertToDto(orderRepository.assignOrderToDriver(orderHistory, driver, updater));
+        OrderHistory assignedOrder = orderRepository.assignOrderToDriver(orderHistory, driver, updater);
+        Collection<String> recipients = getNotificationRecipients(assignedOrder);
+        OrderDetailsDao assignedOrderDao = convertToDto(assignedOrder);
+        mailService.sendOrderUpdateNotification(recipients, assignedOrderDao, ContextAction.ASSIGN);
+        return assignedOrderDao;
     }
 
-    public HistoryRec cancelOrder(Long orderId, Long retrieverUserId) {
+    public OrderDetailsDao cancelOrder(Long orderId, Long retrieverUserId) {
         TpUser retriever = userDetailsRepository.findUserAccount(retrieverUserId);
         OrderHistory orderHistory = orderRepository.getById(orderId);
         validateOrderCancellation(retriever, orderHistory);
-        return convertToDto(orderRepository.cancelOrder(orderHistory));
+        List<String> recipients = getNotificationRecipients(orderHistory);
+        OrderHistory newRec = new OrderHistory(orderHistory.getOrder(), orderHistory.getDriver(), retriever);
+        OrderDetailsDao updatedOrder = convertToDto(orderRepository.cancelOrder(newRec));
+        mailService.sendOrderUpdateNotification(recipients, updatedOrder, ContextAction.CANCEL);
+        return updatedOrder;
     }
 
-    public HistoryRec completeOrder(Long orderId, Long driverId) {
+    public OrderDetailsDao completeOrder(Long orderId, Long driverId) {
         OrderHistory orderDetails = orderRepository.getById(orderId, driverId);
         validateOrderCompletion(orderDetails, driverId);
         OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), orderDetails.getDriver(),
                 userDetailsRepository.findUserAccount(driverId));
-        return convertToDto(orderRepository.completeOrder(newRecord));
+        OrderHistory completedOrder = orderRepository.completeOrder(newRecord);
+        OrderDetailsDao completedOrderDao = convertToDto(completedOrder);
+        List<String> recipients = getNotificationRecipients(completedOrder);
+        mailService.sendOrderUpdateNotification(recipients, completedOrderDao, ContextAction.COMPLETE);
+        return completedOrderDao;
     }
 
-    public HistoryRec refuseOrder(Long id, Long driverId) {
+    public OrderDetailsDao refuseOrder(Long id, Long updaterId) {
         OrderHistory orderDetails = orderRepository.getById(id);
-        TpUser driver = userDetailsRepository.findUserAccount(driverId);
-        validateOrderRefusal(orderDetails, driver);
-        return convertToDto(orderRepository.refuseOrder(orderDetails, driver));
+        TpUser updater = userDetailsRepository.findUserAccount(updaterId);
+        validateOrderRefusal(orderDetails, updater);
+        OrderHistory newRecord = new OrderHistory(orderDetails.getOrder(), null, updater);
+        Collection<String> recipients = getClientAndAllDrivers(orderDetails);
+        OrderDetailsDao refusedOrder = convertToDto(orderRepository.refuseOrder(newRecord));
+        mailService.sendOrderUpdateNotification(recipients, refusedOrder, ContextAction.REFUSE);
+        return refusedOrder;
     }
 
     public Collection getActualUserOrders(Long userId) {
-        return getActualUserOrders(userId, null);
+        return orderRepository.getAllUserOrders(userId);
     }
 
     public Collection getActualUserOrders(Long userId, Long retrieverId) {
@@ -110,12 +140,81 @@ public class OrderService implements IOrderService {
         return orderRepository.getCancelledDriverOrders(driverId);
     }
 
-    private Collection<HistoryRec> convertToDto(Collection<OrderHistory> orderDetails) {
+    @Override
+    public Collection getOpenedUserOrders(Long userId) {
+        return orderRepository.getOpenedUserOrders(userId);
+    }
+
+    @Override
+    public Collection getAssignedUserOrders(Long userId) {
+        return orderRepository.getAssignedUserOrders(userId);
+    }
+
+    @Override
+    public Collection getCancelledUserOrders(Long userId) {
+        return orderRepository.getCancelledUserOrders(userId);
+    }
+
+    @Override
+    public Collection getCompletedUserOrders(Long userId) {
+        return orderRepository.getCompletedUserOrders(userId);
+    }
+
+    @Override
+    public Collection getOpenedOrders() {
+        Collection<OrderHistory> orders = orderRepository.getOpenedOrders();
+        orders.forEach(orderHistory -> {
+            TpOrder order = orderHistory.getOrder();
+            order.getClient().setPhoneNumber(null);
+        });
+        return orders;
+    }
+
+    @Override
+    public Collection refuseOrders(List<Long> orderIds, Long updaterId) {
+        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
+        orderIds.forEach(orderId -> {
+            try {
+                updatedOrders.add(refuseOrder(orderId, updaterId));
+            } catch (WrongStatusOrder e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+        return updatedOrders;
+    }
+
+    @Override
+    public Collection assignOrdersToDriver(List<Long> orderIds, Long updaterId) {
+        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
+        orderIds.forEach(orderId -> {
+            try {
+                updatedOrders.add(assignOrderToDriver(orderId, updaterId, updaterId));
+            } catch (WrongStatusOrder e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+        return updatedOrders;
+    }
+
+    @Override
+    public Collection completeOrders(List<Long> orderIds, Long updaterId) {
+        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
+        orderIds.forEach(orderId -> {
+            try {
+                updatedOrders.add(completeOrder(orderId, updaterId));
+            } catch (WrongStatusOrder e) {
+                logger.warn(e.getLocalizedMessage());
+            }
+        });
+        return updatedOrders;
+    }
+
+    private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }
 
-    private HistoryRec convertToDto(OrderHistory orderHistory) {
-        return modelMapper.map(orderHistory, HistoryRec.class);
+    private OrderDetailsDao convertToDto(OrderHistory orderHistory) {
+        return modelMapper.map(orderHistory, OrderDetailsDao.class);
     }
 
     private TpOrder convertFromDto(OrderDao orderDao) {
@@ -167,9 +266,9 @@ public class OrderService implements IOrderService {
         }
     }
 
-    private void validateOrderRefusal(OrderHistory orderHistory, TpUser driver) {
-        if (!orderHistory.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) || driver == null
-                || !orderHistory.getDriver().getUserId().equals(driver.getUserId()))
+    private void validateOrderRefusal(OrderHistory orderHistory, TpUser updater) {
+        if (!orderHistory.getStatus().getTitleKey().equals(OrderStatuses.ASSIGNED) || updater == null
+                || (!isAdmin(updater) && !orderHistory.getDriver().getUserId().equals(updater.getUserId())))
             throw new WrongStatusOrder(String.format(TaxiServiceException.ORDER_IS_NOT_ASSIGNED_TO_DRIVER,
                     orderHistory.getOrder().getId()));
     }
@@ -193,5 +292,23 @@ public class OrderService implements IOrderService {
 
     private boolean isAdmin(TpUser user) {
         return user.getRoleNames().contains("ROLE_ADMIN");
+    }
+
+    private List<String> getNotificationRecipients(OrderHistory orderHistory) {
+        List<String> recipients = new ArrayList<>();
+        recipients.add(orderHistory.getOrder().getClient().getUserName());
+        if (orderHistory.getDriver() != null && !recipients.contains(orderHistory.getDriver().getUserName())) {
+            recipients.add(orderHistory.getDriver().getUserName());
+        }
+        return recipients;
+    }
+
+    private Collection<String> getClientAndAllDrivers(OrderHistory orderDetails) {
+        Collection<String> recipients = new ArrayList<>();
+        recipients.add(orderDetails.getOrder().getClient().getUserName());
+        userDetailsRepository.findDrivers().forEach(driver -> {
+            recipients.add(((TpUser) driver).getUserName());
+        });
+        return recipients;
     }
 }

@@ -7,16 +7,21 @@ import java.util.stream.Collectors;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.entity.ActivationToken;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.model.TpUserDetails;
+import com.dyukov.taxi.repository.IActivationTokenRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
+import com.dyukov.taxi.service.IActivationUserService;
 import com.dyukov.taxi.service.IUserDetailsService;
 import com.dyukov.taxi.utils.EncryptedPasswordUtils;
+import com.dyukov.taxi.utils.IValidationUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -37,6 +42,12 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     @Autowired
     private ModelMapper modelMapper;
 
+    @Autowired
+    private IValidationUtils validationUtils;
+
+    @Autowired
+    private IActivationUserService activationUserService;
+
     @Override
     public TpUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         TpUser tpUser = userDetailsRepository.findUserAccount(username);
@@ -46,40 +57,67 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
         }
 
-        Collection<String> roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
+        Collection roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
 
         List<GrantedAuthority> grantList = new ArrayList<>();
+        logger.info("Roles length: " + roleNames.size());
         if (roleNames != null) {
-            for (String role : roleNames) {
-                GrantedAuthority authority = new SimpleGrantedAuthority(role);
+            for (Object role : roleNames) {
+                String roleName = (String) role;
+                logger.info("Found role name: " + roleName);
+                GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
                 grantList.add(authority);
             }
         }
 
-        return new TpUserDetails(convertToDTO(tpUser), tpUser.getUserName(), //
+        return new TpUserDetails(tpUser, tpUser.getUserName(), //
                 tpUser.getEncrytedPassword(), grantList);
     }
 
     public UserDao save(RegistrationData registrationData) {
+        validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
-        TpUser savedUser = userDetailsRepository.saveUser(tpUser);
-        return convertToDTO(savedUser);
+        tpUser.setEnabled(false);
+        UserDao savedUser = convertToDTO(userDetailsRepository.saveUser(tpUser));
+        activationUserService.generateActivationToken(savedUser);
+        return savedUser;
     }
 
     public UserDao saveAdmin(RegistrationData registrationData) {
+        validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
-        TpUser savedUser = userDetailsRepository.saveAdmin(tpUser);
-        return convertToDTO(savedUser);
+        tpUser.setEnabled(false);
+        UserDao savedUser = convertToDTO(userDetailsRepository.saveAdmin(tpUser));
+        activationUserService.generateActivationToken(savedUser);
+        return savedUser;
     }
 
     public UserDao saveDriver(RegistrationData registrationData) {
+        validationUtils.validateUser(registrationData);
         TpUser tpUser = convertFromDto(registrationData);
-        TpUser savedUser = userDetailsRepository.saveDriver(tpUser);
-        return convertToDTO(savedUser);
+        tpUser.setEnabled(false);
+        UserDao savedUser = convertToDTO(userDetailsRepository.saveDriver(tpUser));
+        activationUserService.generateActivationToken(savedUser);
+        return savedUser;
     }
 
-    public Collection<UserDao> findAll() {
+    public Collection findAll() {
         return convertToDao(userDetailsRepository.findAll());
+    }
+
+    @Override
+    public Collection findDrivers() {
+        return convertToDao(userDetailsRepository.findDrivers());
+    }
+
+    @Override
+    public Collection findAdmins() {
+        return convertToDao(userDetailsRepository.findAdmins());
+    }
+
+    @Override
+    public Collection findUsers() {
+        return convertToDao(userDetailsRepository.findUsers());
     }
 
     private UserDao convertToDTO(TpUser tpUser) {
@@ -89,7 +127,7 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     private TpUser convertFromDto(RegistrationData registrationData) {
         TpUser tpUser = modelMapper.map(registrationData, TpUser.class);
         tpUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(registrationData.getPassword()));
-        tpUser.setEnabled(true);
+        //tpUser.setEnabled(true);
         return tpUser;
     }
 

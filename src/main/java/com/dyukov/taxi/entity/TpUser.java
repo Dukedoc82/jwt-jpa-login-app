@@ -41,7 +41,7 @@ public class TpUser implements Serializable {
 
     @Transient
     @JsonIgnore
-    private Collection<String> roleNames;
+    private Collection roleNames;
 
     public Long getUserId() {
         return userId;
@@ -99,11 +99,11 @@ public class TpUser implements Serializable {
         this.phoneNumber = phoneNumber;
     }
 
-    public Collection<String> getRoleNames() {
+    public Collection getRoleNames() {
         return roleNames;
     }
 
-    public void setRoleNames(Collection<String> roleNames) {
+    public void setRoleNames(Collection roleNames) {
         this.roleNames = roleNames;
     }
 

@@ -2,7 +2,7 @@ package com.dyukov.taxi.dao;
 
 import java.util.Date;
 
-public class HistoryRec {
+public class OrderDetailsDao {
 
     private OrderDao order;
 

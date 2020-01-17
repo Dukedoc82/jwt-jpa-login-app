@@ -17,7 +17,11 @@ public interface IUserDetailsService {
 
     UserDao saveDriver(RegistrationData registrationData);
 
-    Collection<UserDao> findAll();
+    Collection findAll();
 
+    Collection findDrivers();
 
+    Collection findAdmins();
+
+    Collection findUsers();
 }

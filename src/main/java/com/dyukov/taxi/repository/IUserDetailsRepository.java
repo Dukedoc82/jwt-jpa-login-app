@@ -17,4 +17,12 @@ public interface IUserDetailsRepository {
     TpUser saveAdmin(TpUser tpUser);
 
     TpUser saveDriver(TpUser tpUser);
+
+    TpUser updateUser(TpUser tpUser);
+
+    Collection findDrivers();
+
+    Collection findAdmins();
+
+    Collection findUsers();
 }

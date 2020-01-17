@@ -1,15 +1,21 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.entity.UserRole;
 import com.dyukov.taxi.exception.TaxiServiceException;
 import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
+import com.dyukov.taxi.repository.IUserMailSettingsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.PreDestroy;
 import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
@@ -20,11 +26,16 @@ import java.util.Collection;
 @Transactional
 public class UserDetailsRepository implements IUserDetailsRepository {
 
+    private Logger logger = LoggerFactory.getLogger(UserDetailsRepository.class);
+
     @Autowired
     private EntityManager entityManager;
 
     @Autowired
     private IUserRoleRepository userRoleRepository;
+
+    @Autowired
+    private IUserMailSettingsRepository userMailSettingsRepository;
 
     @Cacheable("users")
     public TpUser findUserAccount(String userName) {
@@ -40,7 +51,9 @@ public class UserDetailsRepository implements IUserDetailsRepository {
 
             return user;
         } catch (NoResultException e) {
-            throw new UserNotFoundException(String.format(TaxiServiceException.USER_NAME_DOES_NOT_EXIST, userName));
+            String message = String.format(TaxiServiceException.USER_NAME_DOES_NOT_EXIST, userName);
+            logger.error(message, e);
+            throw new UserNotFoundException(message, e);
         }
     }
 
@@ -50,6 +63,7 @@ public class UserDetailsRepository implements IUserDetailsRepository {
             Query query = entityManager.createQuery(sql);
             return query.getResultList();
         } catch (NoResultException e) {
+            logger.warn("No user found.");
             return new ArrayList<>();
         }
     }
@@ -70,24 +84,71 @@ public class UserDetailsRepository implements IUserDetailsRepository {
         }
     }
 
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
     public TpUser saveUser(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveUserRole(tpUser);
+        userMailSettingsRepository.persistNewUserSettings(tpUser);
         entityManager.flush();
         return tpUser;
     }
 
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
+    public TpUser updateUser(TpUser tpUser) {
+        entityManager.persist(tpUser);
+        entityManager.flush();
+        return tpUser;
+    }
+
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
     public TpUser saveAdmin(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveAdminRole(tpUser);
+        userMailSettingsRepository.persistNewUserSettings(tpUser);
         entityManager.flush();
         return tpUser;
     }
 
+    @CacheEvict(cacheNames = {"users"}, allEntries = true)
     public TpUser saveDriver(TpUser tpUser) {
         entityManager.persist(tpUser);
         userRoleRepository.saveDriverRole(tpUser);
+        userMailSettingsRepository.persistNewUserSettings(tpUser);
         entityManager.flush();
         return tpUser;
+    }
+
+    @Override
+    public Collection findDrivers() {
+        return findUsersByRole("ROLE_DRIVER");
+    }
+
+    @Override
+    public Collection findAdmins() {
+        return findUsersByRole("ROLE_ADMiN");
+    }
+
+    @Override
+    public Collection findUsers() {
+        return findUsersByRole("ROLE_USER");
+    }
+
+    private Collection findUsersByRole(String roleName) {
+        try {
+            String sql = "Select e from " + TpUser.class.getName() + " e, "  + UserRole.class.getName() + " r " +
+                    "where e.userId = r.tpUser.userId " +
+                    "and r.tpRole.roleName = :roleName";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("roleName", roleName);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            return new ArrayList();
+        }
+    }
+
+    @PreDestroy
+    @CacheEvict(cacheNames = "users", allEntries = true)
+    public void preDestroy() {
+
     }
 }

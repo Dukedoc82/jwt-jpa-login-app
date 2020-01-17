@@ -1,9 +1,6 @@
 package com.dyukov.taxi.config;
 
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,11 +14,27 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private static final String[] AUTH_WHITELIST = {
+
+            // -- swagger ui
+            "/swagger-resources/**",
+            "/swagger-ui.html",
+            "/v2/api-docs",
+            "/webjars/**",
+            "/authenticate",
+            "/register",
+            "/registerAsADriver",
+            "/confirm/**"
+    };
 
     @Autowired
     private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -54,23 +67,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
         // We don't need CSRF for this example
-        httpSecurity.csrf().disable()
+        httpSecurity.cors().and().csrf().disable()
                 // dont authenticate this particular request
-                .authorizeRequests().antMatchers("/authenticate", "/register", "/registerAsADriver").permitAll().
+                .authorizeRequests().antMatchers(AUTH_WHITELIST).permitAll().
                 antMatchers("/new", "/admin/**").
                         hasAuthority("ROLE_ADMIN").
                 antMatchers("/driver/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_DRIVER").
-                antMatchers("/hello", "/order/**").
+                antMatchers("/hello", "/order/**", "/mailService/**").
                         hasAnyAuthority("ROLE_ADMIN", "ROLE_USER", "ROLE_DRIVER").
                 anyRequest().authenticated().
-                and().
-                    formLogin().loginPage("/login.html").permitAll().
-                and().
-                    logout()
-                    .logoutUrl("/logout")
-                    .deleteCookies("userToken")
-                    .invalidateHttpSession(true).permitAll().
+
                 /*and().
                     sessionManagement()
                         .maximumSessions(1).
@@ -89,5 +96,20 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // Add a filter to validate the tokens with every request
         httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
+    }
+
+
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurerAdapter() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins("http://localhost:3000")
+                        .allowedMethods("PUT", "GET", "POST")
+                        .allowedHeaders("usertoken", "content-type");
+            }
+        };
     }
 }

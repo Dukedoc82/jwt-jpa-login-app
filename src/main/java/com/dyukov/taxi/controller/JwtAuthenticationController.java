@@ -3,14 +3,17 @@ package com.dyukov.taxi.controller;
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
-import com.dyukov.taxi.model.JwtRequest;
+import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.model.LoginRequest;
 import com.dyukov.taxi.model.TpUserDetails;
+import com.dyukov.taxi.service.IActivationUserService;
+import com.dyukov.taxi.service.ITokenService;
 import com.dyukov.taxi.service.IUserDetailsService;
+import io.swagger.annotations.Api;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpCookie;
-import org.springframework.http.HttpHeaders;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 
+@Api(value = "Controller for authentication and registration endpoints.",
+        description = "Controller for authentication and registration endpoints.")
 @RestController
 @CrossOrigin
 public class JwtAuthenticationController {
@@ -54,16 +59,23 @@ public class JwtAuthenticationController {
     @Autowired
     private IUserDetailsService userDetailsService;
 
+    @Autowired
+    private IActivationUserService activationUserService;
+
+    @Autowired
+    private ITokenService tokenService;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<?> createAuthenticationToken(@RequestBody JwtRequest authenticationRequest) throws Exception {
+    @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
+    public ResponseEntity<?> createAuthenticationToken(@RequestBody LoginRequest authenticationRequest) throws Exception {
         authenticate(authenticationRequest.getUsername(), authenticationRequest.getPassword());
         final TpUserDetails userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.getUsername());
         final String token = jwtTokenUtil.generateToken(userDetails);
-        HttpCookie cookie = ResponseCookie.from("userToken", token)
-                .path("/")
-                .build();
         String targetUrl = "/";
         Collection<? extends GrantedAuthority> authorities = userDetails.getAuthorities();
         for (GrantedAuthority authority : authorities) {
@@ -79,8 +91,14 @@ public class JwtAuthenticationController {
                     break;
             }
         }
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(new AuthData(targetUrl, userDetails.getUser()));
+        return ResponseEntity.ok()
+                .header("Access-Control-Expose-Headers", "usertoken")
+                .header("usertoken", token)
+                .body(new AuthData(targetUrl, convertToDTO(userDetails.getUser())));
+    }
+
+    private UserDao convertToDTO(TpUser tpUser) {
+        return modelMapper.map(tpUser, UserDao.class);
     }
 
     private String getAdminUrl(String targetUrl) {
@@ -106,6 +124,17 @@ public class JwtAuthenticationController {
     @RequestMapping(value = "/registerAsADriver", method = RequestMethod.POST)
     public UserDao registerAdmin(@RequestBody RegistrationData registrationData) {
         return userDetailsService.saveDriver(registrationData);
+    }
+
+    @RequestMapping(value = "/confirm/{token}", method = RequestMethod.GET)
+    public UserDao activateUser(@PathVariable("token") String token) {
+        return activationUserService.activateUser(token);
+    }
+
+    @RequestMapping(value = "/doLogout", method = RequestMethod.GET)
+    @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
+    public void doLogout(@RequestHeader("userToken") String token) {
+        tokenService.addTokenToBlackList(token);
     }
 
     private void authenticate(String username, String password) throws Exception {
