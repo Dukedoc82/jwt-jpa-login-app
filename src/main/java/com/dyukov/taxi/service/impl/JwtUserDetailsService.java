@@ -7,11 +7,11 @@ import java.util.stream.Collectors;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.dao.UserEditableDataDao;
 import com.dyukov.taxi.dao.UserRolesDao;
-import com.dyukov.taxi.entity.ActivationToken;
+import com.dyukov.taxi.entity.TpRole;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.model.TpUserDetails;
-import com.dyukov.taxi.repository.IActivationTokenRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import com.dyukov.taxi.service.IActivationUserService;
@@ -22,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -84,6 +83,24 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
         UserDao savedUser = convertToDTO(userDetailsRepository.saveDriver(tpUser));
         activationUserService.generateActivationToken(savedUser);
         return savedUser;
+    }
+
+    public UserEditableDataDao getEditableUserData(Long userId) {
+        TpUser user = userDetailsRepository.findUserAccount(userId);
+        UserEditableDataDao editableDataDao = modelMapper.map(user, UserEditableDataDao.class);
+        editableDataDao.setRole(userRoleRepository.getRoleByName((String) user.getRoleNames().iterator().next()));
+        return editableDataDao;
+    }
+
+    @Override
+    public UserEditableDataDao updateUser(UserEditableDataDao userEditableDataDao) {
+        TpUser user = userDetailsRepository.findUserAccount(userEditableDataDao.getUserId());
+        TpRole role = userRoleRepository.getRoleById(userEditableDataDao.getRole().getRoleId());
+        user.setFirstName(userEditableDataDao.getFirstName());
+        user.setLastName(userEditableDataDao.getLastName());
+        userDetailsRepository.updateUser(user);
+        userRoleRepository.updateRole(user, role.getRoleId());
+        return new UserEditableDataDao(user.getUserId(), user.getFirstName(), user.getLastName(), role);
     }
 
     public Collection findAll() {

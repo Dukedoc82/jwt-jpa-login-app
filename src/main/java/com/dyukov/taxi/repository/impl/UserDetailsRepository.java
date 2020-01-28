@@ -93,9 +93,9 @@ public class UserDetailsRepository implements IUserDetailsRepository {
         return tpUser;
     }
 
-    @CacheEvict(cacheNames = {"users"}, allEntries = true)
+    @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
     public TpUser updateUser(TpUser tpUser) {
-        entityManager.persist(tpUser);
+        entityManager.merge(tpUser);
         entityManager.flush();
         return tpUser;
     }

@@ -2,6 +2,7 @@ package com.dyukov.taxi.service;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.dao.UserEditableDataDao;
 import com.dyukov.taxi.dao.UserRolesDao;
 import com.dyukov.taxi.model.TpUserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -29,4 +30,8 @@ public interface IUserDetailsService {
     Collection findUsers();
 
     UserRolesDao getUserRoles(Long userIdFromToken);
+
+    UserEditableDataDao getEditableUserData(Long userId);
+
+    UserEditableDataDao updateUser(UserEditableDataDao userEditableDataDao);
 }
