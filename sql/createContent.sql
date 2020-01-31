@@ -1,6 +1,25 @@
 IF EXISTS(select * from sys.views WHERE NAME = 'current_status_orders_view')
     DROP VIEW current_status_orders_view;
 GO;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_user_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_user_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_role_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_role_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_user_role_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_user_role_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_order_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_order_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_status_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_status_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_order_history_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_order_history_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_token_blacklist_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_token_blacklist_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_activation_token_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_activation_token_seq;
+IF EXISTS (SELECT * FROM sys.sequences WHERE NAME = N'tp_user_mail_settings_seq' AND TYPE='SO')
+    DROP SEQUENCE tp_user_mail_settings_seq;
+
 if OBJECT_ID('dbo.TP_USER_MAIL_SETTINGS', 'U') is not null
     drop table TP_USER_MAIL_SETTINGS;
 if OBJECT_ID('dbo.TP_ACTIVATION_TOKEN', 'U') is not null
@@ -27,7 +46,7 @@ go;
 -- Create tables
 create table TP_USER
 (
-    USER_ID             BIGINT not null IDENTITY(1, 1),
+    USER_ID             BIGINT not null,
     USER_NAME           VARCHAR(50) not null,
     FIRST_NAME          VARCHAR(128) not null,
     LAST_NAME           VARCHAR(128) not null,
@@ -40,6 +59,8 @@ alter table TP_USER
 alter table TP_USER
     add constraint TP_USER_UK unique (USER_NAME);
 
+create sequence tp_user_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_ROLE
 (
     ROLE_ID   BIGINT not null,
@@ -50,9 +71,11 @@ alter table TP_ROLE
 alter table TP_ROLE
     add constraint APP_ROLE_UK unique (ROLE_NAME);
 
+create sequence tp_role_seq START WITH 1 INCREMENT BY 1;
+
 create table USER_ROLE
 (
-    ID      BIGINT not null IDENTITY (1, 1),
+    ID      BIGINT not null,
     USER_ID BIGINT not null,
     ROLE_ID BIGINT not null
 );
@@ -68,8 +91,10 @@ alter table USER_ROLE
     add constraint USER_ROLE_FK2 foreign key (ROLE_ID)
         references TP_ROLE (ROLE_ID);
 
+create sequence tp_user_role_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_ORDER(
-    ID                       BIGINT not null IDENTITY (1, 1),
+    ID                       BIGINT not null,
     CLIENT_ID                BIGINT not null,
     ADDRESS_FROM             VARCHAR(600) not null,
     ADDRESS_TO               VARCHAR(600) not null,
@@ -84,6 +109,8 @@ alter table TP_ORDER
     add constraint TP_ORDER_CLIENT_FK foreign key (CLIENT_ID)
         references TP_USER(USER_ID);
 
+create sequence tp_order_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_STATUS(
     ID            BIGINT not null,
     TITLE_KEY     VARCHAR(50)
@@ -92,8 +119,10 @@ create table TP_STATUS(
 alter table TP_STATUS
     add constraint TP_STATUS_PK primary key (ID);
 
+create sequence tp_status_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_ORDER_HISTORY(
-     ID                 BIGINT not null IDENTITY(1, 1),
+     ID                 BIGINT not null,
      ORDER_ID           BIGINT not null,
      STATUS_ID          BIGINT not null,
      DRIVER_ID          BIGINT,
@@ -116,8 +145,10 @@ alter table TP_ORDER_HISTORY
     add constraint TP_ORDER_HISTORY_UPDATED_FK foreign key (UPDATED_BY)
         references TP_USER(USER_ID);
 
+create sequence tp_order_history_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_TOKEN_BLACKLIST(
-    ID                  BIGINT not null IDENTITY(1, 1),
+    ID                  BIGINT not null,
     TOKEN_VALUE         VARCHAR(max),
     EXPIRE_DATETIME     DATETIME not null
 );
@@ -127,8 +158,10 @@ alter table TP_TOKEN_BLACKLIST
 
 go;
 
+create sequence tp_token_blacklist_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_ACTIVATION_TOKEN(
-    ID                  BIGINT not null IDENTITY(1, 1),
+    ID                  BIGINT not null,
     USER_ID             BIGINT not null,
     TOKEN_VALUE         VARCHAR(max),
     EXPIRE_DATETIME     DATETIME not null
@@ -140,8 +173,10 @@ alter table TP_ACTIVATION_TOKEN
     add constraint TP_ACTIVATION_TOKEN_USER_FK foreign key (USER_ID)
         references TP_USER(USER_ID);
 
+create sequence tp_activation_token_seq START WITH 1 INCREMENT BY 1;
+
 create table TP_USER_MAIL_SETTINGS(
-    ID BIGINT not null IDENTITY(1, 1),
+    ID BIGINT not null,
     USER_ID BIGINT not null,
     NEW_ORDER BIT not null,
     ASSIGN_ORDER BIT not null,
@@ -156,45 +191,58 @@ alter table TP_USER_MAIL_SETTINGS
     add constraint TP_USER_MAIL_SETTINGS_USER_FK foreign key (USER_ID)
         references TP_USER(USER_ID);
 
-SET IDENTITY_INSERT TP_User ON
+create sequence tp_user_mail_settings_seq START WITH 1 INCREMENT BY 1;
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
-values (2, 'dbuser1', 'DB', 'USER', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+values (NEXT VALUE FOR tp_user_seq, 'dbuser1', 'DB', 'USER', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
-values (1, 'dbadmin1', 'DBA', 'ADMIN', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+values (NEXT VALUE FOR tp_user_seq, 'dbadmin1', 'DBA', 'ADMIN', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
-SET IDENTITY_INSERT Tp_User OFF
+insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
+values (NEXT VALUE FOR tp_user_seq, 'dmitry.dyukov@gmail.com', 'Dmitry', 'Dyukov', '+7 (906) 545-12-54', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+
+insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
+values (NEXT VALUE FOR tp_user_seq, 'dmitry_dyukov@epam.com', 'Ivan', 'Ivanov', '+7 (965) 714-07-40', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
 
 ---
 
 insert into tp_role (ROLE_ID, ROLE_NAME)
-values (1, 'ROLE_ADMIN');
+values (NEXT VALUE FOR tp_role_seq, 'ROLE_ADMIN');
 
 insert into tp_role (ROLE_ID, ROLE_NAME)
-values (2, 'ROLE_USER');
+values (NEXT VALUE FOR tp_role_seq, 'ROLE_USER');
 
 insert into tp_role (ROLE_ID, ROLE_NAME)
-values (3, 'ROLE_DRIVER');
+values (NEXT VALUE FOR tp_role_seq, 'ROLE_DRIVER');
 
 ---
 
-SET IDENTITY_INSERT user_role ON
+insert into user_role (ID, USER_ID, ROLE_ID)
+values (NEXT VALUE FOR tp_user_role_seq, 1, 1);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (1, 1, 1);
+values (NEXT VALUE FOR tp_user_role_seq, 1, 2);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (2, 1, 2);
+values (NEXT VALUE FOR tp_user_role_seq, 2, 2);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (3, 2, 2);
+values (NEXT VALUE FOR tp_user_role_seq, 3, 3);
 
-SET IDENTITY_INSERT user_role OFF
+insert into user_role (ID, USER_ID, ROLE_ID)
+values (NEXT VALUE FOR tp_user_role_seq, 4, 2);
 
-INSERT INTO tp_status VALUES (1, 'tp.status.opened');
-INSERT INTO tp_status VALUES (2, 'tp.status.assigned');
-INSERT INTO tp_status VALUES (3, 'tp.status.cancelled');
-INSERT INTO tp_status VALUES (4, 'tp.status.completed');
+INSERT INTO tp_status VALUES (NEXT VALUE FOR tp_status_seq, 'tp.status.opened');
+INSERT INTO tp_status VALUES (NEXT VALUE FOR tp_status_seq, 'tp.status.assigned');
+INSERT INTO tp_status VALUES (NEXT VALUE FOR tp_status_seq, 'tp.status.cancelled');
+INSERT INTO tp_status VALUES (NEXT VALUE FOR tp_status_seq, 'tp.status.completed');
+
+go;
+
+INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 1, 0, 0, 0, 0, 0);
+INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 2, 0, 0, 0, 0, 0);
+INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 3, 0, 0, 0, 0, 0);
+INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 4, 0, 0, 0, 0, 0);
 
 go;

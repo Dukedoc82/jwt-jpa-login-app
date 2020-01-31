@@ -3,6 +3,7 @@ package com.dyukov.taxi.repository.impl;
 import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
+import com.dyukov.taxi.entity.TpOrderStatus;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.exception.OrderNotFoundException;
 import com.dyukov.taxi.exception.TaxiServiceException;
@@ -22,6 +23,8 @@ import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Repository
 @Transactional
@@ -120,6 +123,23 @@ public class OrderRepository implements IOrderRepository {
                 updater));
     }
 
+    @Override
+    public Collection<OrderHistory> assignOrdersToDriver(List<Long> orderIds, TpUser driver, TpUser updater) {
+        List<OrderHistory> orders = getByIds(orderIds);
+        TpOrderStatus assignedStatus = orderStatusRepository.getStatusByKey(OrderStatuses.ASSIGNED);
+        List<OrderHistory> updatedOrders = new ArrayList<>();
+        orders.forEach(orderHistory -> {
+            OrderHistory updateOrder = new OrderHistory(orderHistory);
+            updateOrder.setOrderStatus(assignedStatus);
+            updateOrder.setDriver(driver);
+            updateOrder.setUpdatedBy(updater);
+            entityManager.persist(updateOrder);
+            entityManager.flush();
+            updatedOrders.add(updateOrder);
+        });
+        return updatedOrders;
+    }
+
     public OrderHistory cancelOrder(OrderHistory orderHistory) {
         return updateOrderStatus(orderHistory, OrderStatuses.CANCELED);
     }
@@ -130,6 +150,23 @@ public class OrderRepository implements IOrderRepository {
 
     public OrderHistory refuseOrder(OrderHistory orderDetails) {
         return updateOrderStatus(orderDetails, OrderStatuses.OPENED);
+    }
+
+    @Override
+    public Collection<OrderHistory> refuseOrders(List<Long> orderIds, TpUser updater) {
+        List<OrderHistory> orders = getByIds(orderIds).stream()
+                .filter(orderHistory -> orderHistory.getDriver() != null && orderHistory.getDriver().getUserId().equals(updater.getUserId()))
+                .collect(Collectors.toList());
+        List<OrderHistory> updateOrders = new ArrayList<>();
+        orders.forEach(orderHistory -> {
+            OrderHistory updateOrder = new OrderHistory(orderHistory);
+            updateOrder.setOrderStatus(orderStatusRepository.getStatusByKey(OrderStatuses.OPENED));
+            updateOrder.setUpdatedBy(updater);
+            entityManager.persist(updateOrder);
+            updateOrders.add(updateOrder);
+        });
+        entityManager.flush();
+        return updateOrders;
     }
 
     @Override
@@ -237,9 +274,22 @@ public class OrderRepository implements IOrderRepository {
 
     private OrderHistory updateOrderStatus(OrderHistory orderDetails, String newStatus) {
         orderDetails.setOrderStatus(orderStatusRepository.getStatusByKey(newStatus));
-        entityManager.persist(orderDetails);
-        entityManager.flush();
-        return orderDetails;
+        return orderHistoryRepository.createOrder(orderDetails);
+    }
+
+    private List<OrderHistory> getByIds(List<Long> orderIds) {
+        try {
+            String sql = "select oh from " + OrderHistory.class.getName() + " oh " +
+                    "where oh.order.id in :orderIds " +
+                    "and oh.updatedOn = (select max (r.updatedOn) from " + OrderHistory.class.getName() + " r " +
+                    "where oh.order.id = r.order.id)";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("orderIds", orderIds);
+            return query.getResultList();
+        } catch (NoResultException e) {
+            logger.warn(NO_ORDERS_FOUND_MESSAGE);
+            return new ArrayList<>();
+        }
     }
 
 }

@@ -12,7 +12,8 @@ public class UserRole implements Serializable {
     private static final long serialVersionUID = -6778863180063349822L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_user_role_seq")
+    @SequenceGenerator(name = "tp_user_role_seq", sequenceName = "tp_user_role_seq", allocationSize = 1)
     @Column(name = "Id", nullable = false)
     private Long id;
 

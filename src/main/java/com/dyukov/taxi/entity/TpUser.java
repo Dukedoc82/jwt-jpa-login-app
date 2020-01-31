@@ -15,7 +15,8 @@ public class TpUser implements Serializable {
     private static final long serialVersionUID = 3007298680791369536L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_user_seq")
+    @SequenceGenerator(name = "tp_user_seq", sequenceName = "tp_user_seq", schema = "dbo", allocationSize = 1)
     @Column(name = "User_Id")
     private Long userId;
 

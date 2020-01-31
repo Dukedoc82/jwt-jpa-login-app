@@ -69,7 +69,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         return request.getServletPath().equals("/register")
                 || request.getServletPath().equals("/registerAsADriver")
                 || request.getServletPath().equals("/authenticate")
-                || request.getServletPath().startsWith("/confirm");
+                || request.getServletPath().startsWith("/confirm")
+                || request.getServletPath().equals("/reset");
     }
 
 }

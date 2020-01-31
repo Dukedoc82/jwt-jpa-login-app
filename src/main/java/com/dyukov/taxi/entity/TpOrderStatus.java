@@ -12,7 +12,8 @@ public class TpOrderStatus implements Serializable {
     private static final long serialVersionUID = -8696341617153791138L;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_status_seq")
+    @SequenceGenerator(name = "tp_status_seq", sequenceName = "tp_status_seq", allocationSize = 1)
     private Long id;
 
     @Column(name = "title_key")

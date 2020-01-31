@@ -172,28 +172,13 @@ public class OrderService implements IOrderService {
 
     @Override
     public Collection refuseOrders(List<Long> orderIds, Long updaterId) {
-        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
-        orderIds.forEach(orderId -> {
-            try {
-                updatedOrders.add(refuseOrder(orderId, updaterId));
-            } catch (WrongStatusOrder e) {
-                logger.warn(e.getLocalizedMessage());
-            }
-        });
-        return updatedOrders;
+        return convertToDto(orderRepository.refuseOrders(orderIds, userDetailsRepository.findUserAccount(updaterId)));
     }
 
     @Override
     public Collection assignOrdersToDriver(List<Long> orderIds, Long updaterId) {
-        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
-        orderIds.forEach(orderId -> {
-            try {
-                updatedOrders.add(assignOrderToDriver(orderId, updaterId, updaterId));
-            } catch (WrongStatusOrder e) {
-                logger.warn(e.getLocalizedMessage());
-            }
-        });
-        return updatedOrders;
+        TpUser updater = userDetailsRepository.findUserAccount(updaterId);
+        return convertToDto(orderRepository.assignOrdersToDriver(orderIds, updater, updater));
     }
 
     @Override

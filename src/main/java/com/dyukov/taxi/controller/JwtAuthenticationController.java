@@ -12,6 +12,8 @@ import com.dyukov.taxi.service.ITokenService;
 import com.dyukov.taxi.service.IUserDetailsService;
 import io.swagger.annotations.Api;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.MediaType;
@@ -71,6 +73,14 @@ public class JwtAuthenticationController {
 
     @Autowired
     private JwtTokenUtil tokenUtil;
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationController.class);
+
+    @RequestMapping(value = "/reset", method = RequestMethod.POST)
+    @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
+    public void resetCaches() {
+        logger.info("Reset Caches");
+    }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)

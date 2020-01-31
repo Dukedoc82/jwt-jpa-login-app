@@ -33,7 +33,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             "/authenticate",
             "/register",
             "/registerAsADriver",
-            "/confirm/**"
+            "/confirm/**",
+            "/reset"
     };
 
     @Autowired
@@ -106,7 +107,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000", "https://localhost:3000")
+                        .allowedOrigins("http://localhost:3000", "https://localhost:3000", "http://192.168.0.152:3000", "https://192.168.0.152:3000")
                         .allowedMethods("PUT", "GET", "POST")
                         .allowedHeaders("usertoken", "content-type");
             }

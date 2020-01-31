@@ -7,7 +7,8 @@ import javax.persistence.*;
 public class UserMailSettings {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_user_mail_settings_seq")
+    @SequenceGenerator(name = "tp_user_mail_settings_seq", sequenceName = "tp_user_mail_settings_seq", allocationSize = 1)
     private Long id;
 
     @ManyToOne

@@ -5,6 +5,7 @@ import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface IOrderRepository {
 
@@ -20,11 +21,15 @@ public interface IOrderRepository {
 
     OrderHistory assignOrderToDriver(OrderHistory order, TpUser driver, TpUser updater);
 
+    Collection<OrderHistory> assignOrdersToDriver(List<Long> orderIds, TpUser driver, TpUser updater);
+
     OrderHistory cancelOrder(OrderHistory orderDetails);
 
     OrderHistory completeOrder(OrderHistory orderDetails);
 
     OrderHistory refuseOrder(OrderHistory orderDetails);
+
+    Collection<OrderHistory> refuseOrders (List<Long> orderIds, TpUser updater);
 
     Collection getDriverOrders(Long driverId);
 

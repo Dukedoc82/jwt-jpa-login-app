@@ -13,7 +13,8 @@ public class OrderHistory implements Serializable {
     private static final long serialVersionUID = 8681789090807370488L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_order_history_seq")
+    @SequenceGenerator(name = "tp_order_history_seq", sequenceName = "tp_order_history_seq", allocationSize = 1)
     @JsonIgnore
     private Long id;
 
@@ -59,6 +60,13 @@ public class OrderHistory implements Serializable {
         this.order = order;
         this.driver = driver;
         this.updatedBy = updatedBy;
+    }
+
+    public OrderHistory(OrderHistory orderHistory) {
+        this.order = orderHistory.order;
+        this.driver = orderHistory.driver;
+        this.updatedOn = new Date();
+        this.status = orderHistory.status;
     }
 
     public Long getId() {

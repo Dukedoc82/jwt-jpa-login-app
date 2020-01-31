@@ -11,7 +11,8 @@ public class TpOrder implements Serializable {
     private static final long serialVersionUID = -5272882102371005414L;
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_order_seq")
+    @SequenceGenerator(name = "tp_order_seq", sequenceName = "tp_order_seq", allocationSize = 1)
     private Long id;
 
     @ManyToOne
