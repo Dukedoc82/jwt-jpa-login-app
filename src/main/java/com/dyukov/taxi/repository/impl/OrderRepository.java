@@ -1,6 +1,7 @@
 package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.config.OrderStatuses;
+import com.dyukov.taxi.dao.UpdateOrderDao;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpOrderStatus;
@@ -24,6 +25,8 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Repository
@@ -42,6 +45,9 @@ public class OrderRepository implements IOrderRepository {
 
     @Autowired
     private IOrderHistoryRepository orderHistoryRepository;
+
+    @Autowired
+    private UserDetailsRepository userDetailsRepository;
 
     @NonNull
     public Collection getAll() {
@@ -149,6 +155,7 @@ public class OrderRepository implements IOrderRepository {
     }
 
     public OrderHistory refuseOrder(OrderHistory orderDetails) {
+        orderDetails.setDriver(null);
         return updateOrderStatus(orderDetails, OrderStatuses.OPENED);
     }
 
@@ -162,6 +169,7 @@ public class OrderRepository implements IOrderRepository {
             OrderHistory updateOrder = new OrderHistory(orderHistory);
             updateOrder.setOrderStatus(orderStatusRepository.getStatusByKey(OrderStatuses.OPENED));
             updateOrder.setUpdatedBy(updater);
+            updateOrder.setDriver(null);
             entityManager.persist(updateOrder);
             updateOrders.add(updateOrder);
         });
@@ -235,6 +243,30 @@ public class OrderRepository implements IOrderRepository {
             logger.warn(NO_ORDERS_FOUND_MESSAGE);
             return new ArrayList();
         }
+    }
+
+    @Override
+    public Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, TpUser updater) {
+        List<Long> orderIds = ordersToUpdate.stream().
+                map(UpdateOrderDao::getId).
+                collect(Collectors.toList());
+        Map<Long, UpdateOrderDao> updateOrderDaoMap = ordersToUpdate.stream().collect(Collectors.toMap(UpdateOrderDao::getId, Function.identity()));
+        List<OrderHistory> orderHistories = getByIds(orderIds);
+        Collection<OrderHistory> updatedOrderHistories = new ArrayList<>();
+        for (OrderHistory orderHistory : orderHistories) {
+            OrderHistory updateOrderHistory = new OrderHistory(orderHistory);
+            UpdateOrderDao updateOrderDao = updateOrderDaoMap.get(orderHistory.getOrder().getId());
+            TpUser driver = updateOrderDao.getDriverId() != null ?
+                    userDetailsRepository.findUserAccount(updateOrderDao.getDriverId()) :
+                    null;
+            updateOrderHistory.setDriver(driver);
+            updateOrderHistory.setOrderStatus(orderStatusRepository.getStatusById(updateOrderDao.getStatusId()));
+            updateOrderHistory.setUpdatedBy(updater);
+            entityManager.persist(updateOrderHistory);
+            updatedOrderHistories.add(updateOrderHistory);
+        }
+        entityManager.flush();
+        return updatedOrderHistories;
     }
 
     private Collection getUserOrdersByStatus(Long userId, String status) {

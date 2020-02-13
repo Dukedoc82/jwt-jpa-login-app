@@ -1,5 +1,6 @@
 package com.dyukov.taxi.repository;
 
+import com.dyukov.taxi.dao.UpdateOrderDao;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
@@ -48,4 +49,6 @@ public interface IOrderRepository {
     Collection getCompletedUserOrders(Long userId);
 
     Collection getOpenedOrders();
+
+    Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, TpUser updater);
 }

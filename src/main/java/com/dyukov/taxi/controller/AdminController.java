@@ -2,6 +2,7 @@ package com.dyukov.taxi.controller;
 
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.OrderDetailsDao;
+import com.dyukov.taxi.dao.UpdateOrderDao;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.dao.UserEditableDataDao;
 import com.dyukov.taxi.exception.UserNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.List;
 
 @Api(value = "Controller for admin actions. Access permitted for the users with administrator role only.",
         description = "Controller for admin actions. Access permitted for the users with administrator role only.")
@@ -111,5 +113,11 @@ public class AdminController {
     @RequestMapping("/roles")
     public Collection getSystemRoles() {
         return roleService.getRoles();
+    }
+
+    @RequestMapping(value = "/updateOrders", method = RequestMethod.PUT)
+    public Collection updateOrders(@RequestHeader("usertoken") String token,
+                                   @RequestBody List<UpdateOrderDao> ordersToUpdate) {
+        return orderService.updateOrders(ordersToUpdate, tokenUtil.getUserIdFromToken(token));
     }
 }

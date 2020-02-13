@@ -3,6 +3,7 @@ package com.dyukov.taxi.service.impl;
 import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
+import com.dyukov.taxi.dao.UpdateOrderDao;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
@@ -192,6 +193,12 @@ public class OrderService implements IOrderService {
             }
         });
         return updatedOrders;
+    }
+
+    @Override
+    public Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, Long updaterId) {
+        TpUser updater = userDetailsRepository.findUserAccount(updaterId);
+        return orderRepository.updateOrders(ordersToUpdate, updater);
     }
 
     private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {

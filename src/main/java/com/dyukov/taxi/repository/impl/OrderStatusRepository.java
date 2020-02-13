@@ -42,6 +42,21 @@ public class OrderStatusRepository implements IOrderStatusRepository {
         }
     }
 
+    @Override
+    public TpOrderStatus getStatusById(Long id) {
+        try {
+            String sql = "select os from " + TpOrderStatus.class.getName() + " os " +
+                    "where os.id = :statusId";
+            Query query = entityManager.createQuery(sql);
+            query.setParameter("statusId", id);
+            return (TpOrderStatus) query.getSingleResult();
+        } catch (NoResultException e) {
+            String message = String.format(TaxiServiceException.STATUS_DOES_NOT_EXIST, id);
+            logger.error(message, e);
+            throw new StatusNotFoundException(message, e);
+        }
+    }
+
     public Collection getAvailableStatuses() {
         try {
             String sql = "Select e from " + TpOrderStatus.class.getName() + " e";
