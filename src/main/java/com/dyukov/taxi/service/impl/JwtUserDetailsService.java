@@ -7,10 +7,11 @@ import java.util.stream.Collectors;
 
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
-import com.dyukov.taxi.entity.ActivationToken;
+import com.dyukov.taxi.dao.UserEditableDataDao;
+import com.dyukov.taxi.dao.UserRolesDao;
+import com.dyukov.taxi.entity.TpRole;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.model.TpUserDetails;
-import com.dyukov.taxi.repository.IActivationTokenRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserRoleRepository;
 import com.dyukov.taxi.service.IActivationUserService;
@@ -21,7 +22,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -50,28 +50,12 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
 
     @Override
     public TpUserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        TpUser tpUser = userDetailsRepository.findUserAccount(username);
+        return getTpUserDetailsFromTpUser(userDetailsRepository.findUserAccount(username));
+    }
 
-        if (tpUser == null) {
-            logger.warn("User not found! " + username);
-            throw new UsernameNotFoundException("User " + username + " was not found in the database");
-        }
-
-        Collection roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
-
-        List<GrantedAuthority> grantList = new ArrayList<>();
-        logger.info("Roles length: " + roleNames.size());
-        if (roleNames != null) {
-            for (Object role : roleNames) {
-                String roleName = (String) role;
-                logger.info("Found role name: " + roleName);
-                GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
-                grantList.add(authority);
-            }
-        }
-
-        return new TpUserDetails(tpUser, tpUser.getUserName(), //
-                tpUser.getEncrytedPassword(), grantList);
+    @Override
+    public TpUserDetails findUser(Long id) {
+        return getTpUserDetailsFromTpUser(userDetailsRepository.findUserAccount(id));
     }
 
     public UserDao save(RegistrationData registrationData) {
@@ -101,6 +85,24 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
         return savedUser;
     }
 
+    public UserEditableDataDao getEditableUserData(Long userId) {
+        TpUser user = userDetailsRepository.findUserAccount(userId);
+        UserEditableDataDao editableDataDao = modelMapper.map(user, UserEditableDataDao.class);
+        editableDataDao.setRole(userRoleRepository.getRoleByName((String) user.getRoleNames().iterator().next()));
+        return editableDataDao;
+    }
+
+    @Override
+    public UserEditableDataDao updateUser(UserEditableDataDao userEditableDataDao) {
+        TpUser user = userDetailsRepository.findUserAccount(userEditableDataDao.getUserId());
+        TpRole role = userRoleRepository.getRoleById(userEditableDataDao.getRole().getRoleId());
+        user.setFirstName(userEditableDataDao.getFirstName());
+        user.setLastName(userEditableDataDao.getLastName());
+        userDetailsRepository.updateUser(user);
+        userRoleRepository.updateRole(user, role.getRoleId());
+        return new UserEditableDataDao(user.getUserId(), user.getFirstName(), user.getLastName(), role);
+    }
+
     public Collection findAll() {
         return convertToDao(userDetailsRepository.findAll());
     }
@@ -120,6 +122,15 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
         return convertToDao(userDetailsRepository.findUsers());
     }
 
+    @Override
+    public UserRolesDao getUserRoles(Long userIdFromToken) {
+        UserRolesDao roles = new UserRolesDao();
+        Collection roleNames = userRoleRepository.getRoleNames(userIdFromToken);
+        roles.setAdmin(roleNames.contains("ROLE_ADMIN"));
+        roles.setDriver(roleNames.contains("ROLE_DRIVER"));
+        return roles;
+    }
+
     private UserDao convertToDTO(TpUser tpUser) {
         return modelMapper.map(tpUser, UserDao.class);
     }
@@ -127,11 +138,30 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
     private TpUser convertFromDto(RegistrationData registrationData) {
         TpUser tpUser = modelMapper.map(registrationData, TpUser.class);
         tpUser.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(registrationData.getPassword()));
-        //tpUser.setEnabled(true);
         return tpUser;
     }
 
     private Collection<UserDao> convertToDao(Collection<TpUser> entityUsers) {
         return entityUsers.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+
+
+    private TpUserDetails getTpUserDetailsFromTpUser(TpUser tpUser) {
+        Collection roleNames = this.userRoleRepository.getRoleNames(tpUser.getUserId());
+
+        List<GrantedAuthority> grantList = new ArrayList<>();
+        logger.info("Roles length: " + roleNames.size());
+        if (roleNames != null) {
+            for (Object role : roleNames) {
+                String roleName = (String) role;
+                logger.info("Found role name: " + roleName);
+                GrantedAuthority authority = new SimpleGrantedAuthority(roleName);
+                grantList.add(authority);
+            }
+        }
+
+        return new TpUserDetails(tpUser, tpUser.getUserName(), //
+                tpUser.getEncrytedPassword(), grantList);
     }
 }

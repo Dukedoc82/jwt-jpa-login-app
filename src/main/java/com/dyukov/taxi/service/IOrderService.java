@@ -2,6 +2,7 @@ package com.dyukov.taxi.service;
 
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
+import com.dyukov.taxi.dao.UpdateOrderDao;
 
 import java.util.Collection;
 import java.util.List;
@@ -49,4 +50,6 @@ public interface IOrderService {
     Collection assignOrdersToDriver(List<Long> orderIds, Long updaterId);
 
     Collection completeOrders(List<Long> orderIds, Long updaterId);
+
+    Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, Long updaterId);
 }

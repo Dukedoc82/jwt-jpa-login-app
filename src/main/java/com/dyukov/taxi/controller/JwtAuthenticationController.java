@@ -3,6 +3,7 @@ package com.dyukov.taxi.controller;
 import com.dyukov.taxi.config.JwtTokenUtil;
 import com.dyukov.taxi.dao.RegistrationData;
 import com.dyukov.taxi.dao.UserDao;
+import com.dyukov.taxi.dao.UserRolesDao;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.model.LoginRequest;
 import com.dyukov.taxi.model.TpUserDetails;
@@ -11,6 +12,8 @@ import com.dyukov.taxi.service.ITokenService;
 import com.dyukov.taxi.service.IUserDetailsService;
 import io.swagger.annotations.Api;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.MediaType;
@@ -67,6 +70,17 @@ public class JwtAuthenticationController {
 
     @Autowired
     private ModelMapper modelMapper;
+
+    @Autowired
+    private JwtTokenUtil tokenUtil;
+
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthenticationController.class);
+
+    @RequestMapping(value = "/reset", method = RequestMethod.POST)
+    @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
+    public void resetCaches() {
+        logger.info("Reset Caches");
+    }
 
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -130,6 +144,17 @@ public class JwtAuthenticationController {
     public UserDao activateUser(@PathVariable("token") String token) {
         return activationUserService.activateUser(token);
     }
+
+    @RequestMapping(value = "/user/{token}", method = RequestMethod.GET)
+    public TpUserDetails getUserData(@PathVariable("token") String token) {
+        return userDetailsService.findUser(tokenUtil.getUserIdFromToken(token));
+    }
+
+    @RequestMapping(value = "/userRoles/{token}", method = RequestMethod.GET)
+    public UserRolesDao getUserRoles(@PathVariable("token") String token) {
+        return userDetailsService.getUserRoles(tokenUtil.getUserIdFromToken(token));
+    }
+
 
     @RequestMapping(value = "/doLogout", method = RequestMethod.GET)
     @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)

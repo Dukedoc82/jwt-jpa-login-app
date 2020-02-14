@@ -3,6 +3,7 @@ package com.dyukov.taxi.service.impl;
 import com.dyukov.taxi.config.OrderStatuses;
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.dao.OrderDao;
+import com.dyukov.taxi.dao.UpdateOrderDao;
 import com.dyukov.taxi.entity.OrderHistory;
 import com.dyukov.taxi.entity.TpOrder;
 import com.dyukov.taxi.entity.TpUser;
@@ -172,28 +173,13 @@ public class OrderService implements IOrderService {
 
     @Override
     public Collection refuseOrders(List<Long> orderIds, Long updaterId) {
-        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
-        orderIds.forEach(orderId -> {
-            try {
-                updatedOrders.add(refuseOrder(orderId, updaterId));
-            } catch (WrongStatusOrder e) {
-                logger.warn(e.getLocalizedMessage());
-            }
-        });
-        return updatedOrders;
+        return convertToDto(orderRepository.refuseOrders(orderIds, userDetailsRepository.findUserAccount(updaterId)));
     }
 
     @Override
     public Collection assignOrdersToDriver(List<Long> orderIds, Long updaterId) {
-        Collection<OrderDetailsDao> updatedOrders = new ArrayList<>();
-        orderIds.forEach(orderId -> {
-            try {
-                updatedOrders.add(assignOrderToDriver(orderId, updaterId, updaterId));
-            } catch (WrongStatusOrder e) {
-                logger.warn(e.getLocalizedMessage());
-            }
-        });
-        return updatedOrders;
+        TpUser updater = userDetailsRepository.findUserAccount(updaterId);
+        return convertToDto(orderRepository.assignOrdersToDriver(orderIds, updater, updater));
     }
 
     @Override
@@ -207,6 +193,12 @@ public class OrderService implements IOrderService {
             }
         });
         return updatedOrders;
+    }
+
+    @Override
+    public Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, Long updaterId) {
+        TpUser updater = userDetailsRepository.findUserAccount(updaterId);
+        return orderRepository.updateOrders(ordersToUpdate, updater);
     }
 
     private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {

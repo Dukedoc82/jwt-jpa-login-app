@@ -8,7 +8,8 @@ import java.util.Date;
 public class ExpiredToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_token_blacklist_seq")
+    @SequenceGenerator(sequenceName = "tp_token_blacklist_seq", name = "tp_token_blacklist_seq", allocationSize = 1)
     private Long id;
 
     @Column

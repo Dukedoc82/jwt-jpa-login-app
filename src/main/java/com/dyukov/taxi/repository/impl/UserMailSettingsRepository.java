@@ -2,8 +2,11 @@ package com.dyukov.taxi.repository.impl;
 
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserMailSettings;
+import com.dyukov.taxi.exception.UserMailSettingsNotFoundException;
 import com.dyukov.taxi.exception.UserNotFoundException;
 import com.dyukov.taxi.repository.IUserMailSettingsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,8 @@ import javax.persistence.Query;
 @Repository
 @Transactional
 public class UserMailSettingsRepository implements IUserMailSettingsRepository {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserMailSettingsRepository.class);
 
     @Autowired
     private EntityManager entityManager;
@@ -29,7 +34,7 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
 
     @Override
     public UserMailSettings updateNewOrderNotification(TpUser user, boolean receive) {
-        UserMailSettings settings = getSettingsByUser(user);
+        UserMailSettings settings = getUserMailSettings(user);
         settings.setNewOrder(receive);
         entityManager.persist(settings);
         entityManager.flush();
@@ -38,7 +43,7 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
 
     @Override
     public UserMailSettings updateCancelOrderNotification(TpUser user, boolean receive) {
-        UserMailSettings settings = getSettingsByUser(user);
+        UserMailSettings settings = getUserMailSettings(user);
         settings.setCancelOrder(receive);
         entityManager.persist(settings);
         entityManager.flush();
@@ -47,7 +52,7 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
 
     @Override
     public UserMailSettings updateCompleteOrderNotification(TpUser user, boolean receive) {
-        UserMailSettings settings = getSettingsByUser(user);
+        UserMailSettings settings = getUserMailSettings(user);
         settings.setCompleteOrder(receive);
         entityManager.persist(settings);
         entityManager.flush();
@@ -56,7 +61,7 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
 
     @Override
     public UserMailSettings updateRefuseOrderNotification(TpUser user, boolean receive) {
-        UserMailSettings settings = getSettingsByUser(user);
+        UserMailSettings settings = getUserMailSettings(user);
         settings.setRefuseOrder(receive);
         entityManager.persist(settings);
         entityManager.flush();
@@ -65,7 +70,7 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
 
     @Override
     public UserMailSettings updateAssignOrderNotification(TpUser user, boolean receive) {
-        UserMailSettings settings = getSettingsByUser(user);
+        UserMailSettings settings = getUserMailSettings(user);
         settings.setAssignOrder(receive);
         entityManager.persist(settings);
         entityManager.flush();
@@ -76,12 +81,13 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
     public UserMailSettings getSettingsByUser(TpUser user) {
         try {
             String sql = "select e from " + UserMailSettings.class.getName() + " e " +
-                    "where e.user = :user";
+                    "where e.user.userId = :userId";
             Query query = entityManager.createQuery(sql);
-            query.setParameter("user", user);
+            query.setParameter("userId", user.getUserId());
             return (UserMailSettings) query.getSingleResult();
         } catch (NoResultException e) {
-            throw new UserNotFoundException("User #" + user.getUserId() + " is not found.", e);
+            logger.error("User #" + user.getUserId() + " is not found.", e);
+            throw new UserMailSettingsNotFoundException("User #" + user.getUserId() + " is not found.", e);
         }
     }
 
@@ -90,5 +96,19 @@ public class UserMailSettingsRepository implements IUserMailSettingsRepository {
         entityManager.persist(mailSettings);
         entityManager.flush();
         return mailSettings;
+    }
+
+    private UserMailSettings getDefaultSettings(TpUser user) {
+        return new UserMailSettings(user);
+    }
+
+    private UserMailSettings getUserMailSettings(TpUser user) {
+        UserMailSettings settings;
+        try {
+            settings = getSettingsByUser(user);
+        } catch (UserMailSettingsNotFoundException e) {
+            settings = getDefaultSettings(user);
+        }
+        return settings;
     }
 }

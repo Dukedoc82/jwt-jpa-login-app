@@ -8,5 +8,7 @@ public interface IOrderStatusRepository {
 
     TpOrderStatus getStatusByKey(String key);
 
+    TpOrderStatus getStatusById(Long id);
+
     Collection getAvailableStatuses();
 }

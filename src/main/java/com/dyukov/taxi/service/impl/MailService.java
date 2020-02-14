@@ -3,6 +3,7 @@ package com.dyukov.taxi.service.impl;
 import com.dyukov.taxi.dao.OrderDetailsDao;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserMailSettings;
+import com.dyukov.taxi.exception.UserMailSettingsNotFoundException;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.repository.IUserMailSettingsRepository;
 import com.dyukov.taxi.service.IMailService;
@@ -91,9 +92,13 @@ public class MailService implements IMailService {
                     "orderDetailsTemplate", action.getSubject(), true);
             try {
                 TpUser user = userDetailsRepository.findUserAccount(recipient);
-                UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
-                if (action.sendUpdate(settings)) {
-                    mailSender.send(messagePreparator);
+                try {
+                    UserMailSettings settings = mailSettingsRepository.getSettingsByUser(user);
+                    if (action.sendUpdate(settings)) {
+                        mailSender.send(messagePreparator);
+                    }
+                } catch (UserMailSettingsNotFoundException e) {
+                    // Do nothing as no mail settings for user setup.
                 }
             } catch (MailException e) {
                 logger.error(e.getLocalizedMessage(), e);

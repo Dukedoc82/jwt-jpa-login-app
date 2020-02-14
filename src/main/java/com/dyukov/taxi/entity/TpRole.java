@@ -12,7 +12,8 @@ public class TpRole implements Serializable {
     private static final long serialVersionUID = 5777871383733820000L;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_role_seq")
+    @SequenceGenerator(name = "tp_role_seq", sequenceName = "tp_role_seq", allocationSize = 1)
     @Column(name = "Role_Id", nullable = false)
     private Long roleId;
 

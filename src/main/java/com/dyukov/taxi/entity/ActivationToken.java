@@ -9,7 +9,8 @@ import java.util.Date;
 public class ActivationToken {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tp_activation_token_seq")
+    @SequenceGenerator(sequenceName = "tp_activation_token_seq", name = "tp_activation_token_seq", allocationSize = 1)
     private Long id;
 
     @Column
