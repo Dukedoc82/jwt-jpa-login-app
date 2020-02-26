@@ -219,13 +219,10 @@ values (NEXT VALUE FOR tp_role_seq, 'ROLE_DRIVER');
 ---
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (NEXT VALUE FOR tp_user_role_seq, 1, 1);
-
-insert into user_role (ID, USER_ID, ROLE_ID)
 values (NEXT VALUE FOR tp_user_role_seq, 1, 2);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (NEXT VALUE FOR tp_user_role_seq, 2, 2);
+values (NEXT VALUE FOR tp_user_role_seq, 2, 1);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
 values (NEXT VALUE FOR tp_user_role_seq, 3, 3);
