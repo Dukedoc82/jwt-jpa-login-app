@@ -12,4 +12,8 @@ public interface IMailService {
     void sendRegistrationConfirmationEmail(String recipient, String confirmToken);
 
     void sendOrderUpdateNotification(Collection<String> recipients, OrderDetailsDao order, ContextAction action);
+
+    void sendNewPassword(String recipient, String newPassword);
+
+    void sendNewPasswordRequestTokenMail(String recipient, String confirmToken);
 }

@@ -51,6 +51,12 @@ public class MailService implements IMailService {
     @Value("${mail.confirm.body}")
     private String registerConfirmBody;
 
+    @Value("Hi, you have requested a new password. To proceed follow this link %s")
+    private String confirmNewPasswordGenerationBody;
+
+    @Value("Hi, you requested a new password. Your new password is %s")
+    private String newPasswordBody;
+
     @Override
     public void prepareAndSend(String recipient, String message) {
         MimeMessagePreparator messagePreparator = mimeMessage -> {
@@ -104,5 +110,32 @@ public class MailService implements IMailService {
                 logger.error(e.getLocalizedMessage(), e);
             }
         });
+    }
+
+    @Override
+    public void sendNewPassword(String recipient, String newPassword) {
+        String body = String.format(newPasswordBody, newPassword);
+        MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, body,
+                "New password generated");
+        try {
+            mailSender.send(messagePreparator);
+        } catch (MailException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
+    }
+
+    @Override
+    public void sendNewPasswordRequestTokenMail(String recipient, String confirmToken) {
+        String link = mailAddress + "/generateNewPassword/" + confirmToken;
+        String body = String.format(confirmNewPasswordGenerationBody, link);
+        MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, body,
+                "Confirm new password generation");
+        try {
+            mailSender.send(messagePreparator);
+        } catch (MailException e) {
+            logger.error(e.getLocalizedMessage(), e);
+        }
+
     }
 }

@@ -10,4 +10,8 @@ public interface IActivationUserService {
 
     int deleteExpiredActivationTokens();
 
+    String generateAndSendNewPassword(String userMail);
+
+    void requestNewPassword(String userMail);
+
 }

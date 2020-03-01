@@ -1,5 +1,6 @@
 package com.dyukov.taxi.repository.impl;
 
+import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.TpUser;
 import com.dyukov.taxi.entity.UserRole;
 import com.dyukov.taxi.exception.TaxiServiceException;
@@ -37,7 +38,6 @@ public class UserDetailsRepository implements IUserDetailsRepository {
     @Autowired
     private IUserMailSettingsRepository userMailSettingsRepository;
 
-    @Cacheable("users")
     public TpUser findUserAccount(String userName) {
         try {
             String sql = "Select e from " + TpUser.class.getName() + " e " //
@@ -131,6 +131,19 @@ public class UserDetailsRepository implements IUserDetailsRepository {
     @Override
     public Collection findUsers() {
         return findUsersByRole("ROLE_USER");
+    }
+
+    @Override
+    public TpUser updatePassword(String userMail, String encodedPassword) {
+        TpUser user = findUserAccount(userMail);
+        if (user != null) {
+            user.setEncrytedPassword(encodedPassword);
+            entityManager.persist(user);
+            entityManager.flush();
+            return user;
+        } else {
+            throw new UserNotFoundException(userMail);
+        }
     }
 
     private Collection findUsersByRole(String roleName) {

@@ -3,10 +3,13 @@ package com.dyukov.taxi.service.impl;
 import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.ActivationToken;
 import com.dyukov.taxi.entity.TpUser;
+import com.dyukov.taxi.exception.InvalidRegistrationTokenException;
 import com.dyukov.taxi.repository.IActivationTokenRepository;
 import com.dyukov.taxi.repository.IUserDetailsRepository;
 import com.dyukov.taxi.service.IActivationUserService;
 import com.dyukov.taxi.service.IMailService;
+import com.dyukov.taxi.utils.EncryptedPasswordUtils;
+import com.dyukov.taxi.utils.IPasswordUtils;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +35,9 @@ public class ActivationUserService implements IActivationUserService {
     @Autowired
     private IMailService mailService;
 
+    @Autowired
+    private IPasswordUtils passwordUtils;
+
     @Override
     public void generateActivationToken(UserDao userDao) {
         String token = UUID.randomUUID().toString();
@@ -52,6 +58,31 @@ public class ActivationUserService implements IActivationUserService {
     @Override
     public int deleteExpiredActivationTokens() {
         return activationTokenRepository.deleteOutdatedTokens();
+    }
+
+    @Override
+    public String generateAndSendNewPassword(String token) {
+        ActivationToken requestToken = activationTokenRepository.findToken(token);
+        TpUser requestUser = requestToken.getUser();
+        if (requestUser != null) {
+            String newPassword = passwordUtils.generateRandomPassword();
+            String encodedPassword = EncryptedPasswordUtils.encryptePassword(newPassword);
+            UserDao user = convertToDTO(userDetailsRepository.updatePassword(requestUser.getUserName(), encodedPassword));
+            mailService.sendNewPassword(requestUser.getUserName(), newPassword);
+            activationTokenRepository.deleteToken(token);
+            return user.getUserName();
+        } else {
+            throw new InvalidRegistrationTokenException("No token " + token + " found.");
+        }
+    }
+
+    @Override
+    public void requestNewPassword(String userMail) {
+        String token = UUID.randomUUID().toString();
+        UserDao userDao = convertToDTO(userDetailsRepository.findUserAccount(userMail));
+        activationTokenRepository.persistActivationToken(token, convertFromDTO(userDao));
+        mailService.sendNewPasswordRequestTokenMail(userDao.getUserName(), token);
+
     }
 
     private TpUser convertFromDTO(UserDao userDao) {
