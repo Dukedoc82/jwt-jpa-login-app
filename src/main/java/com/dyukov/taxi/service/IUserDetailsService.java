@@ -34,4 +34,8 @@ public interface IUserDetailsService {
     UserEditableDataDao getEditableUserData(Long userId);
 
     UserEditableDataDao updateUser(UserEditableDataDao userEditableDataDao);
+
+    UserDao getMe(Long userIdFromToken);
+
+    UserDao updateProfile(Long userIdFromToken, RegistrationData profile);
 }

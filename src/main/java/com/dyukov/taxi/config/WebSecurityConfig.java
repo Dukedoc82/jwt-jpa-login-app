@@ -34,7 +34,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
             "/register",
             "/registerAsADriver",
             "/confirm/**",
-            "/reset"
+            "/reset",
+            "/generateNewPassword/**",
+            "/resetPassword"
     };
 
     @Autowired

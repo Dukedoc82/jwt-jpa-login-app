@@ -103,6 +103,24 @@ public class JwtUserDetailsService implements IUserDetailsService, UserDetailsSe
         return new UserEditableDataDao(user.getUserId(), user.getFirstName(), user.getLastName(), role);
     }
 
+    @Override
+    public UserDao getMe(Long userIdFromToken) {
+        TpUser user = userDetailsRepository.findUserAccount(userIdFromToken);
+        return convertToDTO(user);
+    }
+
+    @Override
+    public UserDao updateProfile(Long userIdFromToken, RegistrationData profile) {
+        TpUser user = userDetailsRepository.findUserAccount(userIdFromToken);
+        user.setFirstName(profile.getFirstName());
+        user.setLastName(profile.getLastName());
+        user.setPhoneNumber(profile.getPhoneNumber());
+        if (profile.getPassword() != null && !profile.getPassword().trim().isEmpty()) {
+            user.setEncrytedPassword(EncryptedPasswordUtils.encryptePassword(profile.getPassword()));
+        }
+        return convertToDTO(userDetailsRepository.updateUser(user));
+    }
+
     public Collection findAll() {
         return convertToDao(userDetailsRepository.findAll());
     }

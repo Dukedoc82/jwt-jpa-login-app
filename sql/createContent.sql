@@ -194,16 +194,10 @@ alter table TP_USER_MAIL_SETTINGS
 create sequence tp_user_mail_settings_seq START WITH 1 INCREMENT BY 1;
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
-values (NEXT VALUE FOR tp_user_seq, 'dbuser1', 'DB', 'USER', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+values (NEXT VALUE FOR tp_user_seq, 'dbuser1', 'DB', 'USER', '', '$2a$10$UVjqooXsjxyWoqDDTRBQF.fCbNNNbMYMqVdVVhizoKWaa1aKHPfeW', 1);
 
 insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
-values (NEXT VALUE FOR tp_user_seq, 'dbadmin1', 'DBA', 'ADMIN', '', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
-
-insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
-values (NEXT VALUE FOR tp_user_seq, 'dmitry.dyukov@gmail.com', 'Dmitry', 'Dyukov', '+7 (906) 545-12-54', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
-
-insert into Tp_User (USER_ID, USER_NAME, FIRST_NAME, LAST_NAME, PHONE_NUMBER, ENCRYTED_PASSWORD, ENABLED)
-values (NEXT VALUE FOR tp_user_seq, 'dmitry_dyukov@epam.com', 'Ivan', 'Ivanov', '+7 (965) 714-07-40', '$2a$10$PrI5Gk9L.tSZiW9FXhTS8O8Mz9E97k2FZbFvGFFaSsiTUIl.TCrFu', 1);
+values (NEXT VALUE FOR tp_user_seq, 'dbadmin1', 'DBA', 'ADMIN', '', '$2a$10$UVjqooXsjxyWoqDDTRBQF.fCbNNNbMYMqVdVVhizoKWaa1aKHPfeW', 1);
 
 ---
 
@@ -219,19 +213,10 @@ values (NEXT VALUE FOR tp_role_seq, 'ROLE_DRIVER');
 ---
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (NEXT VALUE FOR tp_user_role_seq, 1, 1);
-
-insert into user_role (ID, USER_ID, ROLE_ID)
 values (NEXT VALUE FOR tp_user_role_seq, 1, 2);
 
 insert into user_role (ID, USER_ID, ROLE_ID)
-values (NEXT VALUE FOR tp_user_role_seq, 2, 2);
-
-insert into user_role (ID, USER_ID, ROLE_ID)
-values (NEXT VALUE FOR tp_user_role_seq, 3, 3);
-
-insert into user_role (ID, USER_ID, ROLE_ID)
-values (NEXT VALUE FOR tp_user_role_seq, 4, 2);
+values (NEXT VALUE FOR tp_user_role_seq, 2, 1);
 
 INSERT INTO tp_status VALUES (NEXT VALUE FOR tp_status_seq, 'tp.status.opened');
 INSERT INTO tp_status VALUES (NEXT VALUE FOR tp_status_seq, 'tp.status.assigned');

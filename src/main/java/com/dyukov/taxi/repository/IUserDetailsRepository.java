@@ -1,5 +1,6 @@
 package com.dyukov.taxi.repository;
 
+import com.dyukov.taxi.dao.UserDao;
 import com.dyukov.taxi.entity.TpUser;
 
 import java.util.Collection;
@@ -25,4 +26,6 @@ public interface IUserDetailsRepository {
     Collection findAdmins();
 
     Collection findUsers();
+
+    TpUser updatePassword(String userMail, String encodedPassword);
 }

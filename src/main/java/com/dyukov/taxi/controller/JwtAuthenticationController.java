@@ -82,6 +82,11 @@ public class JwtAuthenticationController {
         logger.info("Reset Caches");
     }
 
+    @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
+    public void resetPassword(@RequestBody UserDao userDao ) {
+        activationUserService.requestNewPassword(userDao.getUserName());
+    }
+
     @RequestMapping(value = "/authenticate", method = RequestMethod.POST,
             consumes = MediaType.APPLICATION_JSON_UTF8_VALUE)
     @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
@@ -145,6 +150,11 @@ public class JwtAuthenticationController {
         return activationUserService.activateUser(token);
     }
 
+    @RequestMapping(value = "/generateNewPassword/{token}", method = RequestMethod.GET)
+    public void generateNewPassword(@PathVariable("token") String token) {
+        activationUserService.generateAndSendNewPassword(token);
+    }
+
     @RequestMapping(value = "/user/{token}", method = RequestMethod.GET)
     public TpUserDetails getUserData(@PathVariable("token") String token) {
         return userDetailsService.findUser(tokenUtil.getUserIdFromToken(token));
@@ -155,6 +165,10 @@ public class JwtAuthenticationController {
         return userDetailsService.getUserRoles(tokenUtil.getUserIdFromToken(token));
     }
 
+    @RequestMapping(value = "/me", method = RequestMethod.GET)
+    public UserDao getMyDetails(@RequestHeader("userToken") String token) {
+        return userDetailsService.getMe(tokenUtil.getUserIdFromToken(token));
+    }
 
     @RequestMapping(value = "/doLogout", method = RequestMethod.GET)
     @CacheEvict(cacheNames = {"users", "roles", "statuses"}, allEntries = true)
