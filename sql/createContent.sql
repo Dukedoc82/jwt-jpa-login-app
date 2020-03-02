@@ -227,7 +227,5 @@ go;
 
 INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 1, 0, 0, 0, 0, 0);
 INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 2, 0, 0, 0, 0, 0);
-INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 3, 0, 0, 0, 0, 0);
-INSERT INTO tp_user_mail_settings VALUES (NEXT VALUE FOR tp_user_mail_settings_seq, 4, 0, 0, 0, 0, 0);
 
 go;

@@ -1,9 +1,13 @@
 plugins {
     id 'java'
+    id 'org.springframework.boot' version '2.1.1.RELEASE'
 }
 
+apply plugin: 'java'
+apply plugin: 'io.spring.dependency-management'
+
 group 'com.dyukov.taxi'
-version '1.0-SNAPSHOT'
+version '1.1-SNAPSHOT'
 
 sourceCompatibility = 1.8
 
@@ -17,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.springframework.boot:spring-boot-dependencies:2.1.1.RELEASE'
     compile 'io.jsonwebtoken:jjwt:0.9.1'
     compile 'org.passay:passay:1.5.0'
     compile 'org.springframework.boot:spring-boot-starter-parent:2.1.1.RELEASE'
@@ -39,6 +44,21 @@ dependencies {
     compile('io.springfox:springfox-bean-validators:2.9.2')
 
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    components {
+        withModule('org.springframework:spring-beans') {
+            allVariants {
+                withDependencyConstraints {
+                    // Need to patch constraints because snakeyaml is an optional dependency
+                    it.findAll { it.name == 'snakeyaml' }.each { it.version { strictly '1.19' } }
+                }
+            }
+        }
+    }
+}
+
+bootJar {
+    launchScript()
 }
 
 task fatJar(type: Jar) {
