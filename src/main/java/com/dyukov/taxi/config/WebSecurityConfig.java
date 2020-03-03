@@ -115,7 +115,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                                 "https://taxi-epam.ru/*", "http://taxi-epam.ru/*", "https://taxi-epam.ru:80/*", "http://taxi-epam.ru:80/*",
                                 "https://taxi-epam.ru:3000/*", "http://taxi-epam.ru:3000/*",
                                 "https://taxi-epam.ru/**", "http://taxi-epam.ru/**", "https://taxi-epam.ru:80/**", "http://taxi-epam.ru:80/**",
-                                "https://taxi-epam.ru:3000/**", "http://taxi-epam.ru:3000/**")
+                                "https://taxi-epam.ru:3000/**", "http://taxi-epam.ru:3000/**",
+                                "http://epruryaw0808:3000", "http://epruryaw0808:3000/*", "http://epruryaw0808:3000/**")
                         .allowedMethods("PUT", "GET", "POST")
                         .allowedHeaders("usertoken", "content-type");
             }

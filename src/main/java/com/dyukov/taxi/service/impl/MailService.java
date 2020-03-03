@@ -78,7 +78,7 @@ public class MailService implements IMailService {
 
     @Override
     public void sendRegistrationConfirmationEmail(String recipient, String confirmToken) {
-        String link = mailAddress + "/confirm/" + confirmToken;
+        String link = mailAddress + "/?confirm=" + confirmToken;
         String body = String.format(registerConfirmBody, link);
         MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, body,
                 "Registration confirmation");
