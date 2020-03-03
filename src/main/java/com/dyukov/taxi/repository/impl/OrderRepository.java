@@ -259,7 +259,14 @@ public class OrderRepository implements IOrderRepository {
             TpUser driver = updateOrderDao.getDriverId() != null ?
                     userDetailsRepository.findUserAccount(updateOrderDao.getDriverId()) :
                     null;
-            updateOrderHistory.setDriver(driver);
+            TpOrderStatus status = orderStatusRepository.getStatusById(updateOrderDao.getStatusId());
+            if (driver == null) {
+                if (!(status.getTitleKey().equals(OrderStatuses.ASSIGNED) || status.getTitleKey().equals(OrderStatuses.COMPLETED) || status.getTitleKey().equals(OrderStatuses.CANCELED))) {
+                    updateOrderHistory.setDriver(driver);
+                }
+            } else {
+                updateOrderHistory.setDriver(driver);
+            }
             updateOrderHistory.setOrderStatus(orderStatusRepository.getStatusById(updateOrderDao.getStatusId()));
             updateOrderHistory.setUpdatedBy(updater);
             entityManager.persist(updateOrderHistory);
