@@ -127,7 +127,7 @@ public class MailService implements IMailService {
 
     @Override
     public void sendNewPasswordRequestTokenMail(String recipient, String confirmToken) {
-        String link = mailAddress + "/generateNewPassword/" + confirmToken;
+        String link = mailAddress + "/?generateNewPassword=" + confirmToken;
         String body = String.format(confirmNewPasswordGenerationBody, link);
         MimeMessagePreparator messagePreparator = mailBuilder.getMimeMessagePreparator(recipient, body,
                 "Confirm new password generation");
