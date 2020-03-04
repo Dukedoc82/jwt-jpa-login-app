@@ -12,6 +12,6 @@ public interface IActivationUserService {
 
     String generateAndSendNewPassword(String userMail);
 
-    void requestNewPassword(String userMail);
+    void requestNewPassword(String userMail) throws Exception;
 
 }

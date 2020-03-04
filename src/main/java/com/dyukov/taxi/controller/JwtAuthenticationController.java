@@ -83,7 +83,7 @@ public class JwtAuthenticationController {
     }
 
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
-    public void resetPassword(@RequestBody UserDao userDao ) {
+    public void resetPassword(@RequestBody UserDao userDao ) throws Exception {
         activationUserService.requestNewPassword(userDao.getUserName());
     }
 

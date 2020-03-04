@@ -77,8 +77,12 @@ public class ActivationUserService implements IActivationUserService {
     }
 
     @Override
-    public void requestNewPassword(String userMail) {
+    public void requestNewPassword(String userMail) throws Exception {
         String token = UUID.randomUUID().toString();
+        TpUser user = userDetailsRepository.findUserAccount(userMail);
+        if (!user.isEnabled()) {
+            throw new Exception("User " + userMail + " is not activated.");
+        }
         UserDao userDao = convertToDTO(userDetailsRepository.findUserAccount(userMail));
         activationTokenRepository.persistActivationToken(token, convertFromDTO(userDao));
         mailService.sendNewPasswordRequestTokenMail(userDao.getUserName(), token);
