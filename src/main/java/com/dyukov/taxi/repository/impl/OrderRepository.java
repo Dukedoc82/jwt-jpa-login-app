@@ -23,7 +23,9 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -274,6 +276,25 @@ public class OrderRepository implements IOrderRepository {
         }
         entityManager.flush();
         return updatedOrderHistories;
+    }
+
+    public void updateOrdersDate() {
+        try {
+            String sql = "select e from " + TpOrder.class.getName() + " e ";
+            Query query = entityManager.createQuery(sql);
+            List<TpOrder> orders = query.getResultList();
+            for (TpOrder order : orders) {
+                Date orderDate = order.getAppointmentDate();
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(orderDate);
+                calendar.set(Calendar.DAY_OF_MONTH, 6);
+                order.setAppointmentDate(calendar.getTime());
+                entityManager.persist(order);
+            }
+            entityManager.flush();
+        } catch (NoResultException e) {
+            logger.error("Exception while updating order", e);
+        }
     }
 
     private Collection getUserOrdersByStatus(Long userId, String status) {

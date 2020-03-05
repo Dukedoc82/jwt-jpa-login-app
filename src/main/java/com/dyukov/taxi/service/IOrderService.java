@@ -52,4 +52,6 @@ public interface IOrderService {
     Collection completeOrders(List<Long> orderIds, Long updaterId);
 
     Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, Long updaterId);
+
+    void updateOrdersDate();
 }

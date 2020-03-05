@@ -121,6 +121,11 @@ public class OrderController {
         return orderService.getCompletedUserOrders(retrieverUserId);
     }
 
+    @RequestMapping(value = "/uod", method = RequestMethod.POST)
+    public void uod() {
+        orderService.updateOrdersDate();
+    }
+
     private void addUserData(String token, OrderDao order) {
         UserDao client = new UserDao();
         client.setUserId(tokenUtil.getUserIdFromToken(token));

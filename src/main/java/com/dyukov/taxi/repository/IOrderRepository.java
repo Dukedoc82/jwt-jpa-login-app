@@ -51,4 +51,6 @@ public interface IOrderRepository {
     Collection getOpenedOrders();
 
     Collection updateOrders(List<UpdateOrderDao> ordersToUpdate, TpUser updater);
+
+    void updateOrdersDate();
 }

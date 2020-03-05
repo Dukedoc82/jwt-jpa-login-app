@@ -201,6 +201,11 @@ public class OrderService implements IOrderService {
         return orderRepository.updateOrders(ordersToUpdate, updater);
     }
 
+    @Override
+    public void updateOrdersDate() {
+        orderRepository.updateOrdersDate();
+    }
+
     private Collection<OrderDetailsDao> convertToDto(Collection<OrderHistory> orderDetails) {
         return orderDetails.stream().map(this::convertToDto).collect(Collectors.toList());
     }
